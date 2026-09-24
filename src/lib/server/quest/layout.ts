@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { Layout, World, WorldNode } from './engine';
 
 // Where every node sits on the Quest map. Pure and deterministic: the same world
@@ -42,7 +43,13 @@ export function layoutWorld(world: World): Layout {
 	const pos = new Map<string, P>();
 	const all = [...world.nodes.values()].sort((a, b) => (a.id < b.id ? -1 : 1));
 	const halls = all.filter((n) => n.facet === 'deck').sort(byTitle);
-	const tags = all.filter((n) => n.facet === 'tag');
+	const neighbours0 = (id: string) =>
+		(world.links.get(id) ?? []).map((l) => world.nodes.get(l.to)!).filter(Boolean);
+	// Concepts with cards of their own are placed like tags. A concept linked only
+	// to other concepts (enrichment's) floats at the middle of its neighbours below.
+	const holdsCards = (n: WorldNode) => neighbours0(n.id).some((m) => m.facet === 'card');
+	const tags = all.filter((n) => n.facet === 'tag' || (n.facet === 'concept' && holdsCards(n)));
+	const floating = all.filter((n) => n.facet === 'concept' && !holdsCards(n));
 	const cards = all.filter((n) => n.facet === 'card');
 	const neighbours = (id: string) =>
 		(world.links.get(id) ?? []).map((l) => world.nodes.get(l.to)!).filter(Boolean);
@@ -169,11 +176,26 @@ export function layoutWorld(world: World): Layout {
 		if (worst < 0.5) break;
 	}
 
+	// Floating concepts: the middle of whatever they link to, nudged off it.
+	for (const f of floating) {
+		const around = neighbours0(f.id)
+			.map((m) => pos.get(m.id))
+			.filter((p): p is P => !!p);
+		const c = around.length
+			? {
+					x: around.reduce((a, p) => a + p.x, 0) / around.length,
+					y: around.reduce((a, p) => a + p.y, 0) / around.length
+				}
+			: origin;
+		const t = unit(f.id) * 2 * Math.PI;
+		pos.set(f.id, { x: c.x + Math.cos(t) * CONCEPT_CLEAR, y: c.y + Math.sin(t) * CONCEPT_CLEAR });
+	}
+
 	// 3. Cards around their concepts.
 	const groups = new Map<string, { anchor: P; clear: number; members: WorldNode[] }>();
 	for (const c of cards) {
 		const around = neighbours(c.id).filter((n) => n.facet !== 'card');
-		const tagged = around.filter((n) => n.facet === 'tag');
+		const tagged = around.filter((n) => n.facet !== 'deck');
 		const using = tagged.length ? tagged : around;
 		const key = using
 			.map((n) => n.id)
@@ -286,7 +308,8 @@ export function cachedLayout(userId: string, world: World): Layout {
 	for (const [id, n] of world.nodes)
 		parts.push(`${id}:${n.facet}:${n.deck}:${n.weight}:${n.facet === 'card' ? '' : n.title}`);
 	for (const [id, links] of world.links) for (const l of links) parts.push(`${id}>${l.to}`);
-	const key = parts.sort().join('|');
+	// A digest, not the joined string: at corpus scale that string is a megabyte per user.
+	const key = createHash('sha1').update(parts.sort().join('|')).digest('base64');
 	const hit = cache.get(userId);
 	if (hit?.key === key) return hit.layout;
 	const layout = layoutWorld(world);
