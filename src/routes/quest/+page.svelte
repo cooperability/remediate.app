@@ -111,7 +111,8 @@
 		const moved = next.room.id !== view?.room.id;
 		view = next;
 		now = new Date();
-		selected = null;
+		// A tap on the map stays picked through a refresh in place, not through a move.
+		if (moved || !next.map.nodes.some((n) => n.id === selected)) selected = null;
 		if (!moved) return;
 		panel?.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
 		if (focusTitle) {
@@ -120,7 +121,24 @@
 		}
 	}
 
-	const refresh = () => run(async () => arrive(await call<QuestView>('GET', '/api/quest'), false));
+	/**
+	 * Redraw from the server in the background, when a sealed door reopens. Not
+	 * through run(): it would clear the toast the player is reading, and be dropped
+	 * outright while another request is in flight. A failure here is not the
+	 * player's to see; the next action reports it.
+	 */
+	async function refresh() {
+		if (busy || encounter) {
+			setTimeout(refresh, 2000);
+			return;
+		}
+		try {
+			const next = await call<QuestView>('GET', '/api/quest');
+			if (!busy && !encounter) await arrive(next, false);
+		} catch {
+			// Stay on the current view.
+		}
+	}
 
 	const go = (to: string) =>
 		run(async () => arrive(await call<QuestView>('POST', '/api/quest/move', { to })));
