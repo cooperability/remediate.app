@@ -67,7 +67,8 @@ export function layoutWorld(world: World): Layout {
 			ring = Math.max(ring, (a + b + HALL_GAP) / (2 * Math.sin(Math.PI / n)));
 		}
 		halls.forEach((h, i) => {
-			const t = -Math.PI / 2 + (2 * Math.PI * i) / n;
+			// From the left, so two halls sit side by side: screens are wider than tall.
+			const t = Math.PI + (2 * Math.PI * i) / n;
 			pos.set(h.id, { x: ring * Math.cos(t), y: ring * Math.sin(t) });
 		});
 	}

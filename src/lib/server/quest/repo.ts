@@ -7,7 +7,13 @@ import { plainText } from '$lib/server/cards/browse';
 import { writeReview, type Tx } from '$lib/server/cards/review';
 import { retrievability } from '$lib/server/cards/scheduler';
 import { NEW_PER_DAY } from '$lib/server/cards/select';
-import { DOOR_THRESHOLD, type EncounterCard, type Facet, type QuestView } from '$lib/quest/types';
+import {
+	DOOR_THRESHOLD,
+	type EncounterCard,
+	type Facet,
+	type Outcome,
+	type QuestView
+} from '$lib/quest/types';
 import {
 	buildMap,
 	buildWorld,
@@ -363,13 +369,7 @@ export async function openEncounter(
 	});
 }
 
-export interface EncounterGrade {
-	rating: number;
-	/** The door opened: stability reached DOOR_THRESHOLD, and the player stepped through. */
-	unlocked: boolean;
-	/** When a door that stayed shut can be tried again. */
-	retryAt?: string;
-}
+export type EncounterGrade = Outcome;
 
 /**
  * Grade the open encounter. The review goes through writeReview with surface

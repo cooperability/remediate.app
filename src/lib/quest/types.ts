@@ -106,3 +106,12 @@ export const VIA_LABEL: Record<string, string> = {
 	prereq_of: 'leads to',
 	cites: 'cites'
 };
+
+/** What POST /api/review/grade answers for an encounter. */
+export interface Outcome {
+	rating: number;
+	/** The door opened, and the player stepped through it. */
+	unlocked: boolean;
+	/** When a door that stayed shut can be tried again. */
+	retryAt?: string;
+}
