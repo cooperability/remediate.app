@@ -914,7 +914,7 @@ The sketch above became four modules in `src/lib/server/quest/`, three of them p
 | `layout.ts` | ✅   | Deterministic positions for the whole world, cached per graph fingerprint.                                                                                                        |
 | `repo.ts`   |      | Idempotent graph sync (after import and on `/quest` load), the run (QST-4), move, open and grade encounters.                                                                      |
 
-**Until enrichment lands, the graph is what Anki already records.** Each deck is a hall, each tag a passage, and a tag carried in two decks is the bridge between their regions. Enrichment's `similar_to` and `prereq_of` edges need no engine change: when two nodes are joined twice, the door takes the most telling kind (`prereq_of` > `similar_to` > `tag` > `deck`).
+**Until enrichment lands, the graph is what Anki already records.** Each deck is a hall, each tag a passage (with a door from every hall whose cards use it), and a tag carried in two decks is the bridge between their regions. Links keep their direction, so enrichment's edges plug in with meaning: a `prereq_of` edge **seals** what it points at until its source is learned (a card known, or a concept at least half known), and when two nodes are joined twice the door takes the most telling kind (`prereq_of` > `similar_to` > `tag` > `deck`). Enrichment's own concepts (`kind='concept'`, any notetype but `deck`/`tag`) get their own `concept` facet. The import sync owns only `provenance='import'` edges and deck/tag concepts, and never deletes a concept another writer links to.
 
 **The gate has three answers, not two:**
 
@@ -926,6 +926,10 @@ The sketch above became four modules in `src/lib/server/quest/`, three of them p
 | a new card, allowance spent | sealed | `new-cap`: protects tomorrow's review load, whichever surface met the card.  |
 | a missed card, due          | locked | A rematch.                                                                   |
 | a missed card, not yet due  | sealed | `cooling` until FSRS's `due`: no grinding same-day repeats for easy unlocks. |
+
+**Next encounter.** `suggest()` ranks every encounter on offer across the map: due reviews (least retrievable first), then rematches, then first meetings next to the best-known concept. That is the gradient until `prereq_of` edges exist. `POST /api/quest/next` walks the player to a room with that door and opens it.
+
+**Locking.** `importDeck` and every Quest writer take one per-user advisory lock first, then the run row, then a card row. A grade re-checks the door under the lock, so an encounter a Cards review closed, or one opened before the day's allowance ran out, is refused rather than graded.
 
 **One write path (QST-3).** `cards/review.ts` `writeReview` is the only code that steps FSRS and writes `review_log` + `review_state`. A Cards round and a Quest encounter both call it; `POST /api/review/grade` routes on the body (`assessmentId` + `attempt`, or `encounterId`). `review_log.encounter_id` is unique, so a retried grade is reported, not logged twice.
 

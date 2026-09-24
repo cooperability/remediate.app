@@ -42,7 +42,7 @@
 				>
 				<a
 					href={resolve('/quest')}
-					class="text-sm text-muted hover:text-fg aria-[current=page]:text-fg"
+					class="inline-flex min-h-11 items-center text-sm text-muted hover:text-fg aria-[current=page]:text-fg"
 					aria-current={page.url.pathname === '/quest' ? 'page' : undefined}>Quest</a
 				>
 				<form method="POST" action="/login?/logout" class="ml-auto flex items-center gap-3">
