@@ -1,5 +1,5 @@
 import { hasDb } from '../testing/db';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import * as table from '../db/schema';
 
@@ -222,7 +222,10 @@ describe.skipIf(!hasDb)('importDeck against the database', () => {
 		const res = await repo.importDeck(userId, raw);
 		expect(res.imported).toBe(2);
 		expect(res.warnings.some((w) => /repeat/i.test(w))).toBe(true);
-		const rows = await db.select().from(table.node).where(eq(table.node.userId, userId));
+		const rows = await db
+			.select()
+			.from(table.node)
+			.where(and(eq(table.node.userId, userId), eq(table.node.kind, 'card')));
 		expect(rows.map((r) => r.back).sort()).toEqual(['back edited', 'back two']);
 	});
 });
