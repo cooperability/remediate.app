@@ -10,6 +10,7 @@ import {
 	DOOR_THRESHOLD,
 	entrance,
 	gate,
+	holdOf,
 	isKnown,
 	progressOf,
 	revealed,
@@ -334,7 +335,13 @@ describe('describeRoom', () => {
 describe('suggest: the next encounter', () => {
 	it('puts a due review first, then rematches, then first meetings', () => {
 		const ctx = fixture();
-		expect(suggest(ctx, at('h'))).toEqual({ to: 'k2', title: 'k2', kind: 'review', waiting: 3 });
+		expect(suggest(ctx, at('h'))).toEqual({
+			to: 'k2',
+			title: 'k2',
+			kind: 'review',
+			waiting: 3,
+			counts: { review: 1, rematch: 1, new: 1 }
+		});
 		ctx.memory.set('k2', mem(DOOR_THRESHOLD, 2, later));
 		expect(suggest(ctx, at('h'))).toMatchObject({ to: 'm1', kind: 'rematch' });
 		ctx.memory.set('m1', mem(5, 2, later));
@@ -368,11 +375,40 @@ describe('suggest: the next encounter', () => {
 		expect(suggest(ctx, at('m1', ['h']))!.to).toBe('m1');
 		expect(suggest(ctx, at('m2', ['h']))!.to).toBe('m2');
 	});
+	it('counts only the new cards today can still introduce', () => {
+		const nodes: WorldNode[] = [
+			{ id: 'h', facet: 'deck', deck: 'D', title: 'D', weight: 0 },
+			...['a', 'b', 'c', 'd'].map((id) => card(id))
+		];
+		const world = buildWorld(
+			nodes,
+			['a', 'b', 'c', 'd'].map((c) => ({ srcId: c, dstId: 'h', kind: 'deck' }))
+		);
+		const c: Ctx = { world, memory: new Map(), now, newLeft: new Map([['D', 2]]) };
+		expect(suggest(c, at('h'))).toMatchObject({
+			kind: 'new',
+			waiting: 2,
+			counts: { review: 0, rematch: 0, new: 2 }
+		});
+	});
 	it('is null when nothing is on offer', () => {
 		const ctx = fixture({ newLeft: new Map([['D', 0]]) });
 		ctx.memory.set('k2', mem(5, 2, later));
 		ctx.memory.set('m1', mem(5, 2, later));
 		expect(suggest(ctx, at('h'))).toBeNull();
+	});
+});
+
+describe('holdOf: how close a door is to opening', () => {
+	it('is 0 for a card never met and 1 for a known one', () => {
+		expect(holdOf(undefined)).toBe(0);
+		expect(holdOf(mem(0, 0, now))).toBe(0);
+		expect(holdOf(mem(DOOR_THRESHOLD, 2, later))).toBe(1);
+	});
+	it('is stability over the bar below it, never full while the door is shut', () => {
+		expect(holdOf(mem(DOOR_THRESHOLD / 4, 1, later))).toBeCloseTo(0.25);
+		// Relearning is one recall short, whatever the stability.
+		expect(holdOf(mem(DOOR_THRESHOLD * 3, 3, later))).toBeLessThan(1);
 	});
 });
 

@@ -405,13 +405,37 @@ export function suggest(ctx: Ctx, run: Run): Suggestion | null {
 			ctx.world.nodes.get(a.id)!.title.length - ctx.world.nodes.get(b.id)!.title.length ||
 			(a.id < b.id ? -1 : 1)
 	);
+	// Every fresh card whose deck has allowance left is on offer, but only that
+	// many can be met today: count what the day can hold, not the whole deck.
+	const counts = { review: 0, rematch: 0, new: 0 };
+	const freshByDeck = new Map<string, number>();
+	for (const s of scored) {
+		if (s.kind !== 'new') counts[s.kind]++;
+		else {
+			const deck = ctx.world.nodes.get(s.id)!.deck;
+			freshByDeck.set(deck, (freshByDeck.get(deck) ?? 0) + 1);
+		}
+	}
+	for (const [deck, n] of freshByDeck) counts.new += Math.min(n, ctx.newLeft.get(deck) ?? 0);
 	const top = scored[0];
 	return {
 		to: top.id,
 		title: ctx.world.nodes.get(top.id)!.title,
 		kind: top.kind,
-		waiting: scored.length
+		waiting: counts.review + counts.rematch + counts.new,
+		counts
 	};
+}
+
+/**
+ * How far a card's memory is toward opening its door, 0..1: stability over the
+ * bar. 1 only for a card `knows` accepts; a relearning card is one recall short
+ * whatever its stability, so it stops just below.
+ */
+export function holdOf(m: Memory | undefined): number {
+	if (!m || m.state === 0) return 0;
+	if (knows(m)) return 1;
+	return Math.min(m.state === 3 ? 0.9 : 0.99, Math.max(0, m.stability / DOOR_THRESHOLD));
 }
 
 /**

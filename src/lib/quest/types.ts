@@ -116,8 +116,13 @@ export interface Suggestion {
 	to: string;
 	title: string;
 	kind: 'review' | 'rematch' | 'new';
-	/** How many encounters are on offer across the map right now. */
+	/**
+	 * How many encounters are on offer across the map right now. New cards count
+	 * only up to what today's allowance can still introduce, per deck.
+	 */
 	waiting: number;
+	/** `waiting`, by kind. */
+	counts: { review: number; rematch: number; new: number };
 }
 
 export interface QuestView {
@@ -149,6 +154,13 @@ export interface Outcome {
 	review?: boolean;
 	/** When a door that stayed shut can be tried again. */
 	retryAt?: string;
+	/**
+	 * For a door that stayed shut: how far the card's stability is toward the bar
+	 * (DOOR_THRESHOLD), before and after this grade, each 0..1. A correct recall of
+	 * a card missed earlier today can leave it shut (FSRS grows same-day stability
+	 * slowly), and this is what the player sees move instead.
+	 */
+	hold?: { before: number; after: number };
 	/** Decks and tags this recall took to mastery (CLEAR_SHARE of their cards known). */
 	cleared?: string[];
 }

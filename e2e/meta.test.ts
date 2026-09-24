@@ -25,4 +25,5 @@ test('robots.txt keeps crawlers on public pages', async ({ request }) => {
 	const body = await res.text();
 	expect(body).toContain('Disallow: /cards');
 	expect(body).toContain('Disallow: /api');
+	expect(body).toContain('Disallow: /quest');
 });
