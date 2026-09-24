@@ -243,6 +243,31 @@ describe.skipIf(!hasDb)('Quest against the database', () => {
 			expect((await quest.openEncounter(userId, card(0), after)).ok).toBe(true);
 		});
 
+		it('shows the lock moving when a rematch is recalled but the door stays shut', async () => {
+			await quest.questView(userId, at(0));
+			const first = await quest.openEncounter(userId, card(0), at(1));
+			if (!first.ok) throw new Error(first.reason);
+			const miss = outcome(
+				await quest.gradeEncounter(userId, first.encounter.encounterId, card(0), 1, at(2))
+			);
+			expect(miss.hold!.before).toBe(0);
+			expect(miss.hold!.after).toBeGreaterThan(0);
+
+			// FSRS grows same-day stability slowly: a Good minutes after the miss is a
+			// recall, and still below the bar. The player sees the lock move.
+			const later = new Date(new Date(miss.retryAt!).getTime() + 1000);
+			const again = await quest.openEncounter(userId, card(0), later);
+			if (!again.ok) throw new Error(again.reason);
+			const g = outcome(
+				await quest.gradeEncounter(userId, again.encounter.encounterId, card(0), 3, later)
+			);
+			expect(g.unlocked).toBe(false);
+			expect(g.rating).toBe(3);
+			expect(g.hold!.before).toBeCloseTo(miss.hold!.after, 5);
+			expect(g.hold!.after).toBeGreaterThan(g.hold!.before);
+			expect(g.hold!.after).toBeLessThan(1);
+		});
+
 		it('reports a retried grade instead of logging it twice', async () => {
 			await quest.questView(userId, at(0));
 			const e = await quest.openEncounter(userId, card(2), at(1));
@@ -252,7 +277,12 @@ describe.skipIf(!hasDb)('Quest against the database', () => {
 				quest.gradeEncounter(userId, id, card(2), 3, at(2)),
 				quest.gradeEncounter(userId, id, card(2), 1, at(2))
 			]);
-			expect(a).toEqual(b);
+			// The same result either way; only the lock's movement is the first grade's alone.
+			const same = (g: typeof a) => {
+				const { hold, ...rest } = outcome(g);
+				return { ...rest, holdAfter: hold?.after };
+			};
+			expect(same(a)).toEqual(same(b));
 			expect(await logs()).toHaveLength(1);
 		});
 

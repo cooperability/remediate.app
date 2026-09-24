@@ -24,6 +24,7 @@ import {
 	describeRoom,
 	entrance,
 	gate,
+	holdOf,
 	knows,
 	suggest,
 	type Ctx,
@@ -521,10 +522,14 @@ export async function gradeEncounter(
 			if (logged) {
 				if (logged.nodeId !== nodeId) return null;
 				const m = ctx.memory.get(nodeId);
+				// The stability before the first grade is not kept, so a retry reports
+				// where the lock stands without the movement.
 				return {
 					rating: logged.rating,
 					unlocked: knows(m),
-					...(knows(m) ? {} : { retryAt: m?.due.toISOString() })
+					...(knows(m)
+						? {}
+						: { retryAt: m?.due.toISOString(), hold: { before: holdOf(m), after: holdOf(m) } })
 				};
 			}
 
@@ -576,7 +581,12 @@ export async function gradeEncounter(
 				rating,
 				unlocked,
 				...(review ? { review: true } : {}),
-				...(unlocked ? {} : { retryAt: next.due.toISOString() }),
+				...(unlocked
+					? {}
+					: {
+							retryAt: next.due.toISOString(),
+							hold: { before: holdOf(before), after: holdOf(after) }
+						}),
 				...(cleared.length ? { cleared } : {})
 			};
 		},

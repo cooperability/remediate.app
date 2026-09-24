@@ -200,15 +200,27 @@
 	function onkeydown(e: KeyboardEvent) {
 		if (encounter || e.ctrlKey || e.metaKey || e.altKey) return;
 		if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
-		if (e.key === 'n' && view?.next) {
+		// Caps Lock or Shift must not turn the shortcuts off.
+		const key = e.key.toLowerCase();
+		if (key === 'n' && view?.next) {
 			e.preventDefault();
 			next();
-		} else if (e.key === 'f') mapRef?.focus();
-		else if (e.key === 'm') mapRef?.fit();
+		} else if (key === 'f') mapRef?.focus();
+		else if (key === 'm') mapRef?.fit();
 		else if (e.key === 'Escape') selected = null;
 	}
 
 	const NEXT_LABEL = { review: 'Review', rematch: 'Rematch', new: 'New card' } as const;
+
+	/** "13 due · 2 rematch · 20 new": what today holds, most urgent first. */
+	function waitingLabel(c: { review: number; rematch: number; new: number }) {
+		const parts = [
+			c.review && `${c.review} due`,
+			c.rematch && `${c.rematch} rematch`,
+			c.new && `${c.new} new`
+		].filter(Boolean);
+		return parts.join(' · ');
+	}
 </script>
 
 <svelte:window {onkeydown} />
@@ -332,10 +344,13 @@
 			<div class="sticky bottom-0 border-t border-line bg-bg/90 px-4 py-3 backdrop-blur">
 				{#if view.next}
 					<button class="btn btn-primary min-h-12 w-full text-base" disabled={busy} onclick={next}>
-						<span class="min-w-0 truncate">
+						<span class="shrink-0">
 							Next · {NEXT_LABEL[view.next.kind]}
 						</span>
-						<span class="font-mono text-xs opacity-75">{view.next.waiting} waiting</span>
+						<!-- Gives way first on a narrow phone: the action matters more than the tally. -->
+						<span class="min-w-0 truncate font-mono text-xs opacity-75"
+							>{waitingLabel(view.next.counts)}</span
+						>
 						<span class="kbd hidden border-transparent bg-black/15 text-current sm:inline-flex"
 							>N</span
 						>

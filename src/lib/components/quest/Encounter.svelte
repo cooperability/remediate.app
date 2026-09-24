@@ -64,6 +64,9 @@
 		} else if (k !== null) rate(k);
 	}
 
+	// A correct recall can still leave the door shut: see Outcome.hold.
+	const recalled = $derived(!!outcome && outcome.rating >= 2);
+
 	const heading = $derived(
 		encounter.review ? 'A review' : encounter.fresh ? 'A new door' : 'A locked door'
 	);
@@ -155,12 +158,46 @@
 							>
 						</div>
 						<p class="text-2xl font-bold tracking-tight">
-							{outcome.review ? 'It slipped. The door closes.' : 'It stays shut, for now.'}
+							{outcome.review
+								? 'It slipped. The door closes.'
+								: recalled
+									? 'Recalled. The lock gives.'
+									: 'It stays shut, for now.'}
 						</p>
+						{#if outcome.hold && !outcome.review}
+							{@const h = outcome.hold}
+							<div class="w-full max-w-xs">
+								<div
+									class="hold"
+									role="progressbar"
+									aria-label="How close the door is to opening"
+									aria-valuemin={0}
+									aria-valuemax={100}
+									aria-valuenow={Math.round(h.after * 100)}
+								>
+									<div class="before" style="width: {Math.min(h.before, h.after) * 100}%"></div>
+									<div
+										class="after"
+										class:grow={!still && h.after > h.before}
+										style="--from: {Math.min(h.before, h.after) * 100}%; width: {h.after * 100}%"
+									></div>
+								</div>
+								<p class="mt-1.5 font-mono text-xs text-muted tabular-nums">
+									Lock {Math.round(h.after * 100)}% open
+								</p>
+							</div>
+						{/if}
 						<p class="max-w-sm text-sm text-muted">
-							{outcome.retryAt
-								? `You can try again ${reopens(outcome.retryAt)}, when the scheduler says it is worth asking.`
-								: 'Try it again later.'} Missing it is useful: it tells the scheduler what to show you.
+							{#if recalled}
+								The door opens once FSRS trusts this memory to hold for a day, and an earlier miss
+								set it back. {outcome.retryAt
+									? `Next try ${reopens(outcome.retryAt)}.`
+									: 'Try it again later.'} Each recall moves the lock.
+							{:else}
+								{outcome.retryAt
+									? `You can try again ${reopens(outcome.retryAt)}, when the scheduler says it is worth asking.`
+									: 'Try it again later.'} Missing it is useful: it tells the scheduler what to show you.
+							{/if}
 						</p>
 						<button
 							class="btn mt-2 min-h-11 px-6 text-base"
@@ -244,6 +281,32 @@
 		}
 		to {
 			transform: rotate(-18deg);
+		}
+	}
+	.hold {
+		position: relative;
+		height: 0.5rem;
+		overflow: hidden;
+		border-radius: 9999px;
+		background: var(--surface-2);
+	}
+	.hold > div {
+		position: absolute;
+		inset: 0 auto 0 0;
+		border-radius: 9999px;
+	}
+	.hold .before {
+		background: color-mix(in srgb, var(--accent) 35%, transparent);
+	}
+	.hold .after {
+		background: var(--accent);
+	}
+	.hold .after.grow {
+		animation: grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+	}
+	@keyframes grow {
+		from {
+			width: var(--from);
 		}
 	}
 	.cleared {
