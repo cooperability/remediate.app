@@ -160,7 +160,7 @@ remediate.app/
 
 Frontend is promoted to the repo root. There is no second service to be a peer of.
 
-Built on disk today: `src/lib/server/ingest/{anki-tsv,sanitize,identity}.ts`, `src/lib/server/db/schema.ts`, the oslo auth scaffold, and the landing page. `api/extract.py`, `src/lib/server/bmx/`, Cards and Quest routes, cron, and `docs/adr/` are still the target layout.
+Built on disk today: `src/lib/server/ingest/{anki-tsv,sanitize,identity}.ts`, `src/lib/server/db/schema.ts`, the auth scaffold, the landing page, Cards (`src/lib/server/cards/`, `/cards`) and the Quest groundwork (`src/lib/server/quest/`, `/quest`, §9.1). `api/extract.py`, `src/lib/server/bmx/`, anonymous `/play`, cron, and `docs/adr/` are still the target layout.
 
 ---
 
@@ -902,6 +902,32 @@ export function describeRoom(
 **Why `prereq_of` matters (AI-5):** without it the graph is an undirected similarity mesh — no gradient, every room like every other. Directed prerequisite edges give the world a _shape_: easy near the entrance, hard deep in. That's the difference between a map and a hairball, and why AI-5 is P0.
 
 **Anonymous play (QST-6)** runs the same engine against an ephemeral graph keyed by an anon session, 24h TTL, node-capped, **no LLM access**. Same code, different tenant.
+
+### 9.1 As built (Phase 6 groundwork)
+
+The sketch above became four modules in `src/lib/server/quest/`, three of them pure:
+
+| Module      | Pure | Job                                                                                                                                                                               |
+| ----------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `graph.ts`  | ✅   | Cards → concept nodes (one per deck, one per tag; `kind='concept'`, facet in `notetype`) + `deck`/`tag` edges, `provenance='import'`. Anki `::` hierarchy, tags case-insensitive. |
+| `engine.ts` | ✅   | The door gate, fog of war, move and encounter checks, the room and the map.                                                                                                       |
+| `layout.ts` | ✅   | Deterministic positions for the whole world, cached per graph fingerprint.                                                                                                        |
+| `repo.ts`   |      | Idempotent graph sync (after import and on `/quest` load), the run (QST-4), move, open and grade encounters.                                                                      |
+
+**Until enrichment lands, the graph is what Anki already records.** Each deck is a hall, each tag a passage, and a tag carried in two decks is the bridge between their regions. Enrichment's `similar_to` and `prereq_of` edges need no engine change: when two nodes are joined twice, the door takes the most telling kind (`prereq_of` > `similar_to` > `tag` > `deck`).
+
+**The gate has three answers, not two:**
+
+| Door into…                  | Status | Why                                                                          |
+| --------------------------- | ------ | ---------------------------------------------------------------------------- |
+| a deck or tag               | open   | Concepts hold no memory; they are the corridors.                             |
+| a card with `stability ≥ θ` | open   | QST-2.                                                                       |
+| a new card, allowance left  | locked | An encounter is on offer. The allowance is `NEW_PER_DAY`, shared with Cards. |
+| a new card, allowance spent | sealed | `new-cap`: protects tomorrow's review load, whichever surface met the card.  |
+| a missed card, due          | locked | A rematch.                                                                   |
+| a missed card, not yet due  | sealed | `cooling` until FSRS's `due`: no grinding same-day repeats for easy unlocks. |
+
+**One write path (QST-3).** `cards/review.ts` `writeReview` is the only code that steps FSRS and writes `review_log` + `review_state`. A Cards round and a Quest encounter both call it; `POST /api/review/grade` routes on the body (`assessmentId` + `attempt`, or `encounterId`). `review_log.encounter_id` is unique, so a retried grade is reported, not logged twice.
 
 ---
 
