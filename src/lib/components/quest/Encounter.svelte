@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { fade, fly, scale } from 'svelte/transition';
+	import { onMount } from 'svelte';
+	import { fly, scale } from 'svelte/transition';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import Flashcard from '$lib/components/study/Flashcard.svelte';
 	import RatingBar from '$lib/components/study/RatingBar.svelte';
@@ -15,21 +16,30 @@
 		encounter: EncounterCard;
 		/** Grade through /api/review/grade. Resolves with the outcome, or throws. */
 		onrate: (rating: number) => Promise<Outcome>;
-		/** `entered`: the door opened and the player is inside. */
-		onclose: (entered: boolean) => void;
+		/** `outcome`: how it went, or null when the player left before grading. */
+		onclose: (outcome: Outcome | null) => void;
 	} = $props();
 
 	let flipped = $state(false);
 	let busy = $state(false);
 	let outcome = $state<Outcome | null>(null);
 	let failed = $state<string | null>(null);
-	let dialog: HTMLDivElement | undefined = $state();
+	let dialog: HTMLDialogElement | undefined = $state();
+	let body: HTMLDivElement | undefined = $state();
 	let next: HTMLButtonElement | undefined = $state();
 	const still = $derived(prefersReducedMotion.current);
 
+	// A native modal dialog: the page behind it is inert to keyboard, pointer and
+	// screen reader alike, and Esc arrives as a cancel event.
+	onMount(() => {
+		dialog?.showModal();
+		// Not the first button (Later): Space would press it instead of flipping the card.
+		body?.focus();
+		return () => dialog?.close();
+	});
+
 	$effect(() => {
-		// Focus moves into the dialog, and to the result button once there is one.
-		(outcome ? next : dialog)?.focus();
+		if (outcome) next?.focus();
 	});
 
 	async function rate(r: number) {
@@ -46,11 +56,6 @@
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			e.preventDefault();
-			onclose(outcome?.unlocked ?? false);
-			return;
-		}
 		if (outcome) return;
 		const k = studyKey(e);
 		if (k === 'flip') {
@@ -58,38 +63,44 @@
 			flipped = true;
 		} else if (k !== null) rate(k);
 	}
+
+	const heading = $derived(
+		encounter.review ? 'A review' : encounter.fresh ? 'A new door' : 'A locked door'
+	);
+	const lead = $derived(
+		encounter.review
+			? 'You know this one, and FSRS says it is fading. Recall it to keep the door open.'
+			: encounter.fresh
+				? 'Meet this card to open the way. Rate honestly: the scheduler and the map both use it.'
+				: 'You missed this one before. Recall it to open the door.'
+	);
 </script>
 
-<svelte:window {onkeydown} />
-
-<div
-	class="fixed inset-0 z-40 flex flex-col bg-bg/95 backdrop-blur-sm"
-	role="dialog"
-	aria-modal="true"
-	aria-labelledby="encounter-title"
-	tabindex="-1"
+<dialog
 	bind:this={dialog}
-	transition:fade={{ duration: still ? 0 : 150 }}
+	class="encounter"
+	aria-labelledby="encounter-title"
+	oncancel={(e) => {
+		e.preventDefault();
+		onclose(outcome);
+	}}
+	{onkeydown}
 >
-	<div class="mx-auto flex w-full max-w-3xl flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6">
+	<div
+		bind:this={body}
+		tabindex="-1"
+		class="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pt-4 pb-6 focus:outline-none"
+	>
 		<header class="flex items-center gap-3">
-			<button
-				class="btn btn-ghost -ml-2 px-2 py-1 text-muted"
-				onclick={() => onclose(outcome?.unlocked ?? false)}
-			>
-				<span aria-hidden="true">←</span> Back
+			<button class="btn btn-ghost -ml-2 min-h-11 px-3 text-muted" onclick={() => onclose(outcome)}>
+				<span aria-hidden="true">←</span>
+				{outcome ? 'Back' : 'Later'}
 			</button>
-			<p id="encounter-title" class="flex-1 text-center text-sm font-medium">
-				{encounter.fresh ? 'A new door' : 'A locked door'}
-			</p>
-			<span class="kbd">Esc</span>
+			<p id="encounter-title" class="flex-1 text-center text-sm font-medium">{heading}</p>
+			<span class="kbd hidden sm:inline-flex">Esc</span>
 		</header>
 
-		<p class="mt-4 text-center text-sm text-muted">
-			{encounter.fresh
-				? 'Meet this card to open the way. Rate honestly: the scheduler and the map both use it.'
-				: 'This door needs a rematch. Recall it to open it again.'}
-		</p>
+		<p class="mt-4 text-center text-sm text-muted">{lead}</p>
 
 		<div class="mt-5 flex flex-1 flex-col gap-6">
 			{#if outcome}
@@ -99,7 +110,7 @@
 					role="status"
 				>
 					{#if outcome.unlocked}
-						<div class="unlock" aria-hidden="true">
+						<div class="badge open" aria-hidden="true">
 							<svg viewBox="0 0 48 48"
 								><rect x="11" y="21" width="26" height="19" rx="4" /><path
 									d="M17 21v-5a7 7 0 0 1 13.6-2.4"
@@ -107,35 +118,54 @@
 								/></svg
 							>
 						</div>
-						<p class="text-2xl font-bold tracking-tight">The door opens.</p>
-						<p class="max-w-sm text-sm text-muted">
-							That recall counts in Cards too. The room and its tags are on your map now.
+						<p class="text-2xl font-bold tracking-tight">
+							{outcome.review
+								? 'Held. The door stays open.'
+								: encounter.fresh
+									? 'The door opens.'
+									: 'The door opens again.'}
 						</p>
+						<p class="max-w-sm text-sm text-muted">
+							{outcome.review
+								? 'Recalled on time: FSRS pushes the next review further out.'
+								: encounter.fresh
+									? 'A new room. Its tags are on your map, and the recall counts in Cards too.'
+									: 'Back on your map. The recall counts in Cards too.'}
+						</p>
+						{#if outcome.cleared?.length}
+							<p class="cleared" in:fly={{ y: still ? 0 : 8, duration: 300, delay: 200 }}>
+								<span class="eyebrow">Cleared</span>
+								{outcome.cleared.join(', ')}
+								<span class="text-muted">: 80% known</span>
+							</p>
+						{/if}
 						<button
-							class="btn btn-primary mt-2 px-6 py-3 text-base"
+							class="btn btn-primary mt-2 min-h-11 px-6 text-base"
 							bind:this={next}
-							onclick={() => onclose(true)}
+							onclick={() => onclose(outcome)}
 						>
 							Step inside
 						</button>
 					{:else}
-						<div class="shut" aria-hidden="true">
+						<div class="badge shut" aria-hidden="true">
 							<svg viewBox="0 0 48 48"
 								><rect x="11" y="21" width="26" height="19" rx="4" /><path
 									d="M17 21v-5a7 7 0 0 1 14 0v5"
 								/></svg
 							>
 						</div>
-						<p class="text-2xl font-bold tracking-tight">It stays shut, for now.</p>
+						<p class="text-2xl font-bold tracking-tight">
+							{outcome.review ? 'It slipped. The door closes.' : 'It stays shut, for now.'}
+						</p>
 						<p class="max-w-sm text-sm text-muted">
 							{outcome.retryAt
 								? `You can try again ${reopens(outcome.retryAt)}, when the scheduler says it is worth asking.`
 								: 'Try it again later.'} Missing it is useful: it tells the scheduler what to show you.
 						</p>
 						<button
-							class="btn mt-2 px-6 py-3 text-base"
+							class="btn mt-2 min-h-11 px-6 text-base"
 							bind:this={next}
-							onclick={() => onclose(false)}
+							onclick={() => onclose(outcome)}
 						>
 							Back to the room
 						</button>
@@ -145,23 +175,41 @@
 				<div in:fly={{ y: still ? 0 : 12, duration: still ? 0 : 200 }}>
 					<Flashcard card={encounter} {flipped} />
 				</div>
-				{#if failed}
-					<p class="panel border-again/40 bg-again/10 px-4 py-3 text-sm" role="alert">
-						<span class="font-medium text-again">Could not save.</span>
-						<span class="font-mono text-xs text-muted">{failed}</span> Rate again to retry.
-					</p>
-				{/if}
 				<div class="sticky bottom-0 -mx-4 mt-auto bg-bg/85 px-4 py-3 backdrop-blur">
+					{#if failed}
+						<p
+							class="mb-2 rounded-xl border border-again/40 bg-again/10 px-3 py-2 text-sm"
+							role="alert"
+						>
+							<span class="font-medium text-again">Could not save.</span>
+							{failed} Rate again to retry.
+						</p>
+					{/if}
 					<RatingBar {flipped} {busy} onflip={() => (flipped = true)} onrate={rate} />
 				</div>
 			{/if}
 		</div>
 	</div>
-</div>
+</dialog>
 
 <style>
-	.unlock,
-	.shut {
+	.encounter {
+		margin: 0;
+		height: 100dvh;
+		max-height: none;
+		width: 100vw;
+		max-width: none;
+		border: 0;
+		padding: 0;
+		background: color-mix(in srgb, var(--bg) 96%, transparent);
+		color: var(--fg);
+		overflow-y: auto;
+	}
+	.encounter::backdrop {
+		background: color-mix(in srgb, var(--bg) 60%, transparent);
+		backdrop-filter: blur(4px);
+	}
+	.badge {
 		display: flex;
 		height: 5rem;
 		width: 5rem;
@@ -169,11 +217,11 @@
 		justify-content: center;
 		border-radius: 9999px;
 	}
-	.unlock {
+	.badge.open {
 		background: color-mix(in srgb, var(--good) 15%, transparent);
 		color: var(--good);
 	}
-	.shut {
+	.badge.shut {
 		background: var(--surface-2);
 		color: var(--muted);
 	}
@@ -197,5 +245,17 @@
 		to {
 			transform: rotate(-18deg);
 		}
+	}
+	.cleared {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: center;
+		gap: 0.5rem;
+		border-radius: 0.75rem;
+		border: 1px solid color-mix(in srgb, var(--hard) 45%, transparent);
+		background: color-mix(in srgb, var(--hard) 12%, transparent);
+		padding: 0.5rem 0.9rem;
+		font-weight: 600;
 	}
 </style>

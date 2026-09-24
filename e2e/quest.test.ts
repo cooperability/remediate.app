@@ -110,7 +110,7 @@ test.describe('quest', () => {
 	test('a missed door stays shut and says when it reopens', async ({ page, baseURL }) => {
 		await signIn(page, baseURL!);
 		await page.goto('/quest');
-		await page.getByRole('button', { name: /Next encounter/ }).click();
+		await page.getByRole('button', { name: /Next ·/ }).click();
 		const dialog = page.getByRole('dialog');
 		// Space before the dialog is up would press the focused button again.
 		await expect(dialog.getByRole('button', { name: /Show answer/ })).toBeVisible();
