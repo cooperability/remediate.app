@@ -32,5 +32,8 @@ export function contentId(userId: string, deck: string, front: string, back: str
  * same node. Owner-scoped for the same reason as internalId.
  */
 export function conceptId(userId: string, facet: 'deck' | 'tag', name: string): string {
-	return digest(`${userId}\u0000concept\u0000${facet}\u0000${name}`);
+	// A separator no other digest input uses, and the facet first: with the same
+	// \u0000 layout as contentId, a card in deck "concept" with front "tag" would
+	// hash to the same id as a tag.
+	return digest(`concept\u0001${facet}\u0001${userId}\u0001${name}`);
 }

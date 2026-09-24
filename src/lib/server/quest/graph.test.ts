@@ -4,6 +4,7 @@ import { deriveImportGraph, escapeHtml, lineage } from './graph';
 
 const U = 'u1';
 const deck = (name: string) => conceptId(U, 'deck', name);
+// Tags are case-insensitive: their ids are keyed on the lower-cased name.
 const tag = (name: string) => conceptId(U, 'tag', name.toLowerCase());
 
 describe('lineage', () => {
@@ -36,8 +37,10 @@ describe('deriveImportGraph', () => {
 			['tag', 'history', 1],
 			['tag', 'logic', 2]
 		]);
-		expect(g.edges).toHaveLength(5);
+		// 2 card→hall, 3 card→tag, and a passage from each tag to the hall.
+		expect(g.edges).toHaveLength(7);
 		expect(g.edges).toContainEqual({ srcId: 'c1', dstId: deck('D'), kind: 'deck' });
+		expect(g.edges).toContainEqual({ srcId: tag('logic'), dstId: deck('D'), kind: 'deck' });
 		expect(g.edges).toContainEqual({ srcId: 'c2', dstId: tag('logic'), kind: 'tag' });
 	});
 
@@ -77,6 +80,12 @@ describe('deriveImportGraph', () => {
 		);
 		// The card links to the leaf only; broader concepts count it through the chain.
 		expect(g.edges.filter((e) => e.srcId === 'c')).toHaveLength(2);
+		// The leaf tag's passage goes to the card's own (leaf) hall.
+		expect(g.edges).toContainEqual({
+			srcId: tag('cs::algo::sort'),
+			dstId: deck('Lang::French'),
+			kind: 'deck'
+		});
 		expect(g.concepts.find((c) => c.name === 'cs')?.cards).toBe(1);
 	});
 

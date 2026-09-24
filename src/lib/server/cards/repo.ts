@@ -3,7 +3,7 @@ import type { Grade } from 'ts-fsrs';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { parseAnkiExport } from '$lib/server/ingest/anki-tsv';
-import { syncImportGraph } from '$lib/server/quest/repo';
+import { questLock, syncImportGraphIn } from '$lib/server/quest/repo';
 import { introducedToday } from './budget';
 import { classify, gradeRound, mergeStanding, standingOf } from './grading';
 import { writeReview } from './review';
@@ -29,6 +29,10 @@ export async function importDeck(userId: string, raw: string) {
 	// back the whole import, not a prefix of it, and leaves the request's transaction
 	// usable, so the page load after the action's error still renders.
 	await db.transaction(async (tx) => {
+		// Quest's lock first, as every Quest writer takes it: the upserts lock card
+		// rows, and the graph sync can reach the run row, so any other order can
+		// deadlock against a Quest grade (which holds the run, then the card).
+		await tx.execute(questLock(userId));
 		for (let i = 0; i < notes.length; i += 500) {
 			await tx
 				.insert(table.node)
@@ -41,12 +45,14 @@ export async function importDeck(userId: string, raw: string) {
 						deck: excluded('deck'),
 						tags: excluded('tags'),
 						notetype: excluded('notetype')
-					}
+					},
+					// Never let a card overwrite a concept or a document with the same id.
+					setWhere: eq(table.node.kind, 'card')
 				});
 		}
+		// Keep the Quest map in step with the cards' decks and tags.
+		await syncImportGraphIn(tx, userId);
 	});
-	// Keep the Quest map in step with the cards' decks and tags.
-	await syncImportGraph(userId);
 	return { imported: notes.length, warnings };
 }
 

@@ -94,3 +94,21 @@ describe('interval previews', () => {
 		expect(d[1]).toBeLessThan(d[2]);
 	});
 });
+
+describe('retrievability on incomplete rows', () => {
+	it('is null, not a throw, for a reviewed row with no last review', () => {
+		const now = new Date('2026-09-24T12:00:00Z');
+		const row = {
+			stability: 5,
+			difficulty: 5,
+			due: now,
+			reps: 3,
+			lapses: 0,
+			state: 2,
+			learningSteps: 0,
+			scheduledDays: 5,
+			lastReview: null
+		};
+		expect(retrievability(row, now)).toBeNull();
+	});
+});

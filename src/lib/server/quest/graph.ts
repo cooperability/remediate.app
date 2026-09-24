@@ -4,8 +4,12 @@ import { conceptId } from '$lib/server/ingest/identity';
 //
 // Until enrichment (Phase 5) writes similar_to and prereq_of edges, the only
 // structure a corpus has is what Anki already records: each card's deck and its
-// tags. Each deck and each tag becomes a concept node, and each card links to
-// them. Tags shared across decks become the bridges between the decks' regions.
+// tags. Each deck and each tag becomes a concept node, each card links to them,
+// and each tag links to the halls whose cards use it. Tags shared across decks
+// become the bridges between the decks' regions.
+//
+// Edges with provenance 'import' belong to this module: repo.ts syncImportGraph
+// rewrites them to match. Other writers (enrichment, BMX) use their own provenance.
 //
 // Pure: cards in, rows out. repo.ts diffs the rows against the database.
 
@@ -129,6 +133,7 @@ export function deriveImportGraph(
 
 	for (const c of cards) {
 		const deckNames = lineage(c.deck);
+		const hall = deckNames.length ? concept('deck', deckNames[deckNames.length - 1]) : null;
 		if (deckNames.length) attach(c.id, 'deck', deckNames, 'deck');
 		const seen = new Set<string>();
 		for (const tag of c.tags) {
@@ -139,6 +144,9 @@ export function deriveImportGraph(
 			if (!leaf || seen.has(leaf.toLowerCase())) continue;
 			seen.add(leaf.toLowerCase());
 			attach(c.id, 'tag', names, 'tag');
+			// A passage from the hall to each tag its cards use, so a deck's halls
+			// have corridors from day one and a shared tag joins two halls.
+			if (hall) link(concept('tag', leaf), hall, 'deck');
 		}
 	}
 

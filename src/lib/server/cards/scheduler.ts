@@ -60,9 +60,13 @@ export function grade(
 	return { next: fromCard(card), elapsedDays: log.elapsed_days, priorState: log.state };
 }
 
-/** Probability of recall now. 1 for a card never reviewed has no meaning, so new cards return null. */
+/**
+ * Probability of recall now. 1 for a card never reviewed has no meaning, so new
+ * cards return null, as does a row with no last review to measure from (ts-fsrs
+ * throws on it, and one bad row must not take a whole page down).
+ */
 export function retrievability(s: StoredState | null | undefined, now: Date): number | null {
-	if (!s || s.state === 0) return null;
+	if (!s || s.state === 0 || !s.lastReview) return null;
 	return f.get_retrievability(toCard(s, now), now, false);
 }
 
