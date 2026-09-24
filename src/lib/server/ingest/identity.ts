@@ -25,3 +25,12 @@ export function internalId(userId: string, guid: string): string {
 export function contentId(userId: string, deck: string, front: string, back: string): string {
 	return digest(`${userId}\u0000${deck}\u0000${front}\u0000${back}`);
 }
+
+/**
+ * Id for a concept node: a deck hub or a tag. Quest derives these from the cards'
+ * own deck and tags columns (quest/graph.ts), so the same name always lands on the
+ * same node. Owner-scoped for the same reason as internalId.
+ */
+export function conceptId(userId: string, facet: 'deck' | 'tag', name: string): string {
+	return digest(`${userId}\u0000concept\u0000${facet}\u0000${name}`);
+}
