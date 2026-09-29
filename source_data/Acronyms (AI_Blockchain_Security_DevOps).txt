@@ -1,0 +1,320 @@
+#separator:tab
+#html:true
+#guid column:1
+#notetype column:2
+#deck column:3
+#tags column:6
+bBQeYeDI7S	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TCP	Transmission Control Protocol, the connection-oriented transport protocol that delivers an ordered, retransmitted, congestion-controlled byte stream after a three-way handshake.	networking
+UBDAnXWpcs	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IP	Internet Protocol, the network-layer protocol that addresses and routes packets between hosts on a best-effort basis with no delivery guarantee.	networking
+SFgBjYVTie	Basic	Acronyms (AI/Blockchain/Security/DevOps)	UDP	User Datagram Protocol, a connectionless transport that sends datagrams with no handshake, ordering, or retransmission, used by DNS, VoIP, games, and QUIC.	networking
+rfgl23oE1j	Basic	Acronyms (AI/Blockchain/Security/DevOps)	QUIC	A UDP-based transport standardized by the IETF that builds in TLS 1.3 encryption and multiplexed streams to cut connection setup latency, and it carries HTTP/3.	networking
+DQ5YudYhKz	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DNS	Domain Name System, the distributed hierarchical database that resolves hostnames like example.com into IP addresses.	networking
+kogNKWhR5j	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DNSSEC	DNS Security Extensions, which sign DNS records so resolvers can verify that a response came from the zone owner and was not forged.	networking security
+Tpr3H7wDat	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DoH	DNS over HTTPS, which wraps DNS queries in encrypted HTTPS traffic so on-path observers cannot read or tamper with lookups.	networking security
+HNSn5PAquV	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BGP	Border Gateway Protocol, the path-vector protocol autonomous systems use to exchange internet routes, and a recurring cause of global outages and route hijacks.	networking
+TDPIxyi57J	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ASN	Autonomous System Number, the unique ID assigned to a network that announces its own IP prefixes to the internet over BGP.	networking
+AxeiwAvAWl	Basic	Acronyms (AI/Blockchain/Security/DevOps)	NAT	Network Address Translation, which rewrites private IP addresses to a shared public address at a router to conserve IPv4 space.	networking
+2RXkHrPGKW	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CIDR	Classless Inter-Domain Routing, the notation like 10.0.0.0/16 that describes an IP range by the length of its fixed prefix.	networking
+B6mqQ87hGT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DHCP	Dynamic Host Configuration Protocol, which automatically assigns a device its IP address, gateway, and DNS servers when it joins a network.	networking
+HrgJsqPAIF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ARP	Address Resolution Protocol, which maps an IPv4 address to a MAC address on a local network and can be spoofed for man-in-the-middle attacks.	networking security
+G0AnuYRLkI	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ICMP	Internet Control Message Protocol, the IP companion protocol that carries error reports and diagnostics such as ping and traceroute.	networking
+Ag47tbykFv	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MAC	Media Access Control address, the 48-bit hardware ID of a network interface, and in cryptography a Message Authentication Code that proves integrity with a shared key.	networking crypto
+HYrwZl1bRH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MTU	Maximum Transmission Unit, the largest packet a link carries without fragmentation, typically 1500 bytes on Ethernet.	networking
+vuTu2ZhFl9	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OSI	Open Systems Interconnection, the seven-layer reference model (physical, data link, network, transport, session, presentation, application) used to place any protocol in the stack.	networking
+O58k959pvQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RTT	Round-Trip Time, the time a packet takes to reach a destination and come back, which sets the floor on every request's latency.	networking
+GTNZlHVPFW	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TTL	Time To Live, a hop counter or duration after which a packet, DNS record, or cache entry expires.	networking devops
+ioirS9pb5L	Basic	Acronyms (AI/Blockchain/Security/DevOps)	VPC	Virtual Private Cloud, an isolated software-defined network inside a cloud provider where you control subnets, route tables, and firewall rules.	devops networking
+dnTZwkDiOn	Basic	Acronyms (AI/Blockchain/Security/DevOps)	VPN	Virtual Private Network, an encrypted tunnel that carries traffic between a device and a remote network over the public internet, with WireGuard and IPsec as common protocols.	networking security
+ShVy7NdfAS	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CDN	Content Delivery Network, a fleet of edge servers that caches content near users to cut latency and absorb traffic spikes.	networking web
+f7ZdDtZ6VE	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SNI	Server Name Indication, a TLS extension in which the client names the hostname it wants so one IP address can serve many certificates.	networking security
+oihnaj5E2T	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ALPN	Application-Layer Protocol Negotiation, a TLS extension that lets client and server agree on HTTP/1.1, HTTP/2, or HTTP/3 during the handshake.	networking
+AEXHu67xSW	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RPC	Remote Procedure Call, invoking a function on another machine as if it were local, and in blockchain the JSON-RPC endpoint you query to read chain state and submit transactions.	networking blockchain
+q9aUjugy7U	Basic	Acronyms (AI/Blockchain/Security/DevOps)	gRPC	A Google-born RPC framework that sends Protocol Buffers over HTTP/2 for typed, streaming service-to-service calls.	networking web
+v4oROJcgiO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SSE	Server-Sent Events, a one-way HTTP stream from server to browser, and the transport most LLM APIs use to stream tokens.	web ai
+u0RwN6UKo7	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RFC	Request for Comments, the IETF document series that defines internet standards, such as RFC 9293 for TCP.	networking
+dqAG4SSWJz	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SPF	Sender Policy Framework, a DNS TXT record that lists which servers may send email for a domain.	security networking
+hdSUeCs4lH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DKIM	DomainKeys Identified Mail, which signs outgoing email headers with a key published in DNS so receivers can detect tampering and spoofing.	security networking
+bq3xvc2WPC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DMARC	Domain-based Message Authentication, Reporting and Conformance, a DNS policy that tells receivers what to do when SPF or DKIM fails and where to send reports.	security networking
+lFBv5JmM5u	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HSTS	HTTP Strict Transport Security, a response header that makes browsers use only HTTPS for a domain for a set period, blocking SSL-stripping downgrades.	security web
+zxu7soxnp2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CSP	Content Security Policy, a response header that allowlists the sources a page may load scripts, styles, and frames from, limiting the damage of XSS.	security web
+HjOdHjR5a9	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CORS	Cross-Origin Resource Sharing, the browser mechanism where a server sends headers to relax the same-origin policy for specific origins.	security web
+E4cckrzB3A	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SOP	Same-Origin Policy, the browser rule that stops a script from one origin reading responses from another origin.	security web
+fef9RKlEUA	Basic	Acronyms (AI/Blockchain/Security/DevOps)	XSS	Cross-Site Scripting, an injection flaw where attacker-controlled script runs in a victim's browser under a trusted site's origin.	security web
+KJf329u6wR	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SSRF	Server-Side Request Forgery, a flaw that tricks a server into requesting internal URLs such as the cloud metadata endpoint at 169.254.169.254.	security web
+9GiByc8UTU	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RCE	Remote Code Execution, the vulnerability class that lets an attacker run arbitrary code on a target over the network.	security
+T5NIEJhCWm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SQLi	SQL injection, where untrusted input concatenated into a query changes its meaning, prevented by parameterized queries.	security web
+CfoNyLSvp6	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IDOR	Insecure Direct Object Reference, an access-control flaw where changing an ID in a request exposes another user's data.	security web
+8bQSev3T0b	Basic	Acronyms (AI/Blockchain/Security/DevOps)	XXE	XML External Entity, an attack where a malicious XML document makes a parser read local files or call internal hosts.	security web
+SuLZCdsKEd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	UAF	Use-After-Free, a memory-safety bug where code keeps using a pointer after its memory is freed, a leading source of browser exploits.	security
+GEtRaUN2NY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TOCTOU	Time-Of-Check to Time-Of-Use, a race condition where state changes between when a program validates it and when it acts on it.	security
+mtx61Lgltp	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ASLR	Address Space Layout Randomization, an OS defense that randomizes where code, stack, and heap load so exploits cannot hardcode addresses.	security
+9E19LeUBal	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DEP	Data Execution Prevention, also called NX, which marks memory pages as non-executable so injected shellcode on the stack or heap cannot run.	security
+XohgSy48PQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ROP	Return-Oriented Programming, an exploit technique that chains existing instruction snippets ending in ret to bypass non-executable memory.	security
+urPLOgZgQm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OWASP	Open Worldwide Application Security Project, the nonprofit whose Top 10 ranks the most critical web application security risks.	security web
+WzbyXCYnq1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CVE	Common Vulnerabilities and Exposures, the public catalog that gives each disclosed vulnerability an ID like CVE-2021-44228 (Log4Shell).	security
+MbNONzb4sP	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CVSS	Common Vulnerability Scoring System, the 0 to 10 severity score attached to a vulnerability from its exploitability and impact.	security
+9riMPgPT4Y	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CWE	Common Weakness Enumeration, the catalog of weakness types, such as CWE-79 for XSS, that individual CVEs map to.	security
+DdvuzxfEKP	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KEV	Known Exploited Vulnerabilities, the CISA catalog of CVEs confirmed exploited in the wild, which US federal agencies must patch by a deadline.	security
+KKLwxdHunW	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EPSS	Exploit Prediction Scoring System, a daily-updated probability that a given CVE will be exploited in the next 30 days.	security
+VNpw2oVfrK	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SAST	Static Application Security Testing, which scans source code for vulnerabilities without running it.	security devops
+p7a9gEO9QT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DAST	Dynamic Application Security Testing, which probes a running application from the outside for vulnerabilities.	security devops
+hTs5o9VIss	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SCA	Software Composition Analysis, which inventories third-party dependencies and flags known-vulnerable or badly licensed ones.	security devops
+xYnRR1dIaw	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SBOM	Software Bill of Materials, a machine-readable inventory of every component and version in a build, in formats like SPDX or CycloneDX.	security devops
+NnofUMvshH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SLSA	Supply-chain Levels for Software Artifacts, a framework of graded requirements for build provenance and tamper resistance, pronounced salsa.	security devops
+e8dnzj3el1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SSO	Single Sign-On, where one login at an identity provider grants access to many applications.	security
+3Dz7ZTe7Ff	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SAML	Security Assertion Markup Language, the XML standard enterprises use to pass signed SSO assertions from an identity provider to applications.	security
+7MhrRkOm5u	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OIDC	OpenID Connect, an identity layer on OAuth 2.0 that adds a signed ID token so an app can verify who the user is.	security web
+0qEnfh6viY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IdP	Identity Provider, the service such as Okta or Microsoft Entra ID that authenticates users and issues assertions or tokens to other apps.	security
+8YFUYGTl90	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PKCE	Proof Key for Code Exchange, an OAuth extension where the client proves it holds a secret whose hash it sent earlier, so a stolen authorization code is useless.	security web
+UT9sIdWJyl	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JWKS	JSON Web Key Set, the published set of public keys a service fetches to verify JWT signatures.	security web
+aQwJ38GSVp	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TOTP	Time-based One-Time Password, the six-digit code an authenticator app derives from a shared secret and the current 30-second window.	security
+hHO9Acyz9T	Basic	Acronyms (AI/Blockchain/Security/DevOps)	FIDO	Fast IDentity Online, the alliance and standards (FIDO2, WebAuthn, passkeys) behind phishing-resistant public-key login.	security
+yfpnqyjYTm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RBAC	Role-Based Access Control, which grants permissions to roles and assigns users to roles.	security
+zUMkypuxB6	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ABAC	Attribute-Based Access Control, which evaluates policies over attributes of the user, resource, and context at request time.	security
+qDruBYK9Kr	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IAM	Identity and Access Management, the system of identities, roles, and policies that decides who can do what, as in AWS IAM.	security devops
+9awdjxA8li	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PAM	Privileged Access Management, tooling that vaults and records use of admin credentials, and on Linux the Pluggable Authentication Modules stack.	security
+qicqPhWPhB	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PoLP	Principle of Least Privilege, the rule that every user, process, and token gets only the permissions its job requires.	security
+h7Jx2DRpzF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ZTNA	Zero Trust Network Access, which grants per-application access from identity and device posture instead of trusting anything inside the network perimeter.	security networking
+dHcCsjmcsQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	mTLS	Mutual TLS, where both client and server present certificates, common for service-to-service auth in a service mesh.	security networking
+Nhb8B3uzx0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TLS	Transport Layer Security, the successor to SSL that encrypts and authenticates connections, with TLS 1.3 cutting the handshake to one round trip.	security networking
+2i9kaxzeRO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PKI	Public Key Infrastructure, the certificate authorities, certificates, and revocation machinery that bind public keys to identities.	security crypto
+SPxe5TiwZE	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CA	Certificate Authority, a trusted party that signs certificates vouching that a public key belongs to a domain or organization.	security crypto
+kf4ENq4wYW	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CSR	Certificate Signing Request, the file you send a CA to get a certificate, and in frontend work Client-Side Rendering in the browser.	security web
+fJG6INOsOx	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OCSP	Online Certificate Status Protocol, which lets a client check whether a certificate was revoked, often stapled by the server into the TLS handshake.	security crypto
+u9u4nWiQQN	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ACME	Automatic Certificate Management Environment, the protocol Let's Encrypt uses to issue and renew TLS certificates without human steps.	security devops
+rYhcvpdlYO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HSM	Hardware Security Module, tamper-resistant hardware that generates and stores keys and signs or decrypts without ever exporting them.	security crypto
+cXjR8TtBck	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KMS	Key Management Service, a managed cloud service that creates, rotates, and controls access to encryption keys, often backed by HSMs.	security devops
+8sdmr6RxUc	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TPM	Trusted Platform Module, a chip that stores keys and records measurements of the boot chain for secure boot and disk encryption.	security
+rLPHUr67Le	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TEE	Trusted Execution Environment, an isolated processor enclave such as Intel SGX or ARM TrustZone that shields code and data from the host OS.	security crypto
+FAcbHbvcPG	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AES	Advanced Encryption Standard, the symmetric block cipher used almost everywhere, most often as AES-256-GCM.	crypto
+GJXX3d0Vnq	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GCM	Galois/Counter Mode, an authenticated encryption mode for AES whose security collapses if a nonce is ever reused with the same key.	crypto
+Z37LLEvw3F	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AEAD	Authenticated Encryption with Associated Data, encryption that also authenticates the ciphertext plus unencrypted headers in one step.	crypto
+w4o08HBDOw	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RSA	Rivest-Shamir-Adleman, the public-key cryptosystem whose security rests on the difficulty of factoring the product of two large primes.	crypto
+Znw4hspFcg	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ECC	Elliptic Curve Cryptography, public-key crypto built on the elliptic curve discrete log problem, matching RSA security with far smaller keys.	crypto
+YIXGyAD6je	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ECDSA	Elliptic Curve Digital Signature Algorithm, the signature scheme Bitcoin and Ethereum use over the secp256k1 curve.	crypto blockchain
+F5fBVmlIJj	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EdDSA	Edwards-curve Digital Signature Algorithm, a deterministic scheme usually run as Ed25519, used by Solana, modern SSH keys, and Tor onion addresses.	crypto blockchain
+jOroL5fBxH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ECDH	Elliptic Curve Diffie-Hellman, a key agreement where two parties derive a shared secret over an open channel.	crypto
+LE2Ieuo2WQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HMAC	Hash-based Message Authentication Code, a keyed hash that proves a message came from a holder of the shared secret and was not modified, used to sign webhooks.	crypto
+75IUyydOsF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SHA	Secure Hash Algorithm, the NIST hash family where SHA-256 secures Bitcoin, while Ethereum uses Keccak-256, which pads differently from standardized SHA3-256.	crypto blockchain
+RpQsYzUU6L	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KDF	Key Derivation Function, which turns a password or secret into keys, as PBKDF2, scrypt, Argon2, and HKDF do.	crypto
+FebVROazJT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CSPRNG	Cryptographically Secure Pseudo-Random Number Generator, the only kind of RNG safe for keys, nonces, and tokens.	crypto
+UbxCcY6PeL	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PFS	Perfect Forward Secrecy, the property that stealing a long-term key does not decrypt past sessions, achieved with ephemeral key exchange.	crypto security
+dG2QGaPGQk	Basic	Acronyms (AI/Blockchain/Security/DevOps)	E2EE	End-to-End Encryption, where only the communicating endpoints hold the keys, so the server relaying messages cannot read them.	crypto security
+brTC7TaFLa	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PGP	Pretty Good Privacy, the email and file encryption and signing standard implemented today mostly as GnuPG (GPG).	crypto security
+LoNpEyAAR5	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PQC	Post-Quantum Cryptography, algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium), standardized by NIST in 2024 to resist quantum attacks.	crypto security
+D5tRXEivxy	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MITM	Man-in-the-Middle, an attack where an adversary secretly relays and can alter traffic between two parties who think they talk directly.	security
+Zp1B7qObcP	Basic	Acronyms (AI/Blockchain/Security/DevOps)	APT	Advanced Persistent Threat, a well-resourced, usually state-backed group that holds long-term covert access inside a target.	security
+TsGjQdpEqS	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TTP	Tactics, Techniques, and Procedures, the behavior patterns of an attacker, catalogued in the MITRE ATT&amp;CK framework.	security
+kfOpuzvTKH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IOC	Indicator of Compromise, a forensic artifact such as a file hash, IP address, or domain that signals a system was breached.	security
+VnPX1oUmeG	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SIEM	Security Information and Event Management, a platform like Splunk that aggregates and correlates logs to detect and investigate threats.	security
+A3t33HyOWc	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SOAR	Security Orchestration, Automation, and Response, tooling that runs playbooks to triage and contain alerts automatically.	security
+D96mOJgo4e	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EDR	Endpoint Detection and Response, an agent on each host such as CrowdStrike Falcon that records activity and blocks or isolates threats.	security
+eJBWowBD5B	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IDS	Intrusion Detection System, which watches network or host activity and alerts on malicious patterns, while an IPS also blocks them.	security networking
+vjl0tEda8n	Basic	Acronyms (AI/Blockchain/Security/DevOps)	WAF	Web Application Firewall, which inspects HTTP traffic and blocks requests matching attacks like SQLi and XSS.	security web
+TZ6Wi39Ud9	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DDoS	Distributed Denial of Service, an attack that floods a target from many machines, usually a botnet, to exhaust its bandwidth or compute.	security networking
+1ISc2x8DaC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SOC	Security Operations Center, the team that monitors and responds to threats, and SOC 2, the AICPA audit report B2B buyers demand as proof of security controls.	security
+VN0TXQjHPS	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CTF	Capture The Flag, a hacking competition where teams solve security puzzles or attack and defend services to capture secret flag strings.	security
+zjQSs0NoWM	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OSINT	Open-Source Intelligence, intelligence gathered from public sources such as social media, DNS records, code repos, and breach dumps.	security
+J8iEKOjihd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PII	Personally Identifiable Information, any data that can identify a specific person, such as a name, email, SSN, or precise location.	security
+DuADRXOZTD	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GDPR	General Data Protection Regulation, the EU privacy law that gives people rights over their data and allows fines up to 4% of global annual revenue.	security
+YBu8jiWWhg	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HIPAA	Health Insurance Portability and Accountability Act, the US law that governs how health data (PHI) is stored, shared, and protected.	security
+GbfK49FprR	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PCI DSS	Payment Card Industry Data Security Standard, the rules any business that stores, processes, or transmits card numbers must follow.	security
+oXcDBoP2ud	Basic	Acronyms (AI/Blockchain/Security/DevOps)	NIST	National Institute of Standards and Technology, the US agency behind the Cybersecurity Framework, SP 800-53, and approved crypto standards.	security
+gCRzECs2fy	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CISA	Cybersecurity and Infrastructure Security Agency, the US agency that coordinates national cyber defense and publishes the KEV catalog.	security
+YICX3oLqUE	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MDM	Mobile Device Management, software that enrolls phones and tablets so an organization can push apps, enforce policies, and wipe devices remotely.	security android
+gj7kYFAy8S	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HMDM	Headwind MDM, an open-source Android mobile device management platform used to provision kiosk devices, push APKs, and lock down settings.	android security
+TfKHTBBJcl	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JNI	Java Native Interface, the bridge that lets Java or Kotlin code call native C and C++ libraries and lets native code call back into the JVM.	android java
+J2UKq5iE6s	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JDK	Java Development Kit, the compiler (javac), JVM, standard library, and tools needed to build Java programs.	java
+0XMFX7BStd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JRE	Java Runtime Environment, the JVM plus standard library needed to run, but not compile, Java programs.	java
+v5LZu72umd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JVM	Java Virtual Machine, the runtime that executes Java bytecode and also runs Kotlin, Scala, and Clojure.	java
+FH4hBgpcJM	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JAR	Java ARchive, a zip file bundling compiled classes, resources, and a manifest, the unit of Java library distribution.	java
+GkXc9wKxsO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	JIT	Just-In-Time compilation, which compiles frequently run bytecode to machine code at runtime, as the JVM and V8 do.	java cs
+JYTm1ywu5O	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AOT	Ahead-Of-Time compilation, which compiles code to machine code before it runs, trading runtime flexibility for fast startup.	java cs
+mxHomgngsK	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GC	Garbage Collection, automatic reclamation of memory that no live reference points to, at the cost of occasional pauses.	java cs
+bPrIpC4V0w	Basic	Acronyms (AI/Blockchain/Security/DevOps)	APK	Android Package Kit, the zip archive containing an app's DEX bytecode, resources, manifest, and signature that Android installs.	android
+QfHziDbNWJ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AAB	Android App Bundle, the publishing format Google Play requires, from which Play generates optimized APKs for each device.	android
+mMroy3jLc4	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ADB	Android Debug Bridge, the command-line tool for installing APKs, opening a shell, forwarding ports, and reading logs on Android devices.	android
+hcLMuaLzZf	Basic	Acronyms (AI/Blockchain/Security/DevOps)	NDK	Native Development Kit, Android's toolset for compiling C and C++ code that an app calls through JNI.	android
+DCJ1vDsg2E	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DEX	Dalvik Executable, the bytecode format Android compiles Java and Kotlin into, and in crypto a Decentralized Exchange such as Uniswap that trades tokens through smart contracts.	android blockchain
+foz18jJxD1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ART	Android Runtime, the runtime that executes DEX bytecode using ahead-of-time, just-in-time, and profile-guided compilation.	android
+h003o6d45a	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AOSP	Android Open Source Project, the open-source base of Android that vendors and custom ROMs build on, without Google's proprietary apps and services.	android
+GxCtNinz6W	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OTA	Over-The-Air update, delivering firmware or app updates to a device wirelessly instead of by cable.	android devops
+2u7DguBjyq	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SSR	Server-Side Rendering, generating a page's HTML on the server per request so it loads fast and is crawlable before JavaScript runs.	web
+rp2Mn4au5k	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SSG	Static Site Generation, rendering pages to HTML at build time so a CDN can serve them with no server work per request.	web
+aGlxmL0VrU	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ISR	Incremental Static Regeneration, a Next.js feature that rebuilds individual static pages in the background after a set interval.	web
+mImk2ecPBK	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SPA	Single-Page Application, a web app that loads one HTML shell and swaps views with JavaScript instead of full page loads.	web
+pNHC6pH7X3	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DOM	Document Object Model, the browser's in-memory tree of a page's elements that JavaScript reads and mutates.	web
+u9VgJiZWcj	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ESM	ECMAScript Modules, JavaScript's native import and export module system that replaced CommonJS require.	web
+voHmFwuLn0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ASGI	Asynchronous Server Gateway Interface, the Python standard that lets async servers like Uvicorn run frameworks like FastAPI and Django.	web
+gGR44zH4Ja	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GIL	Global Interpreter Lock, the CPython mutex that lets only one thread execute Python bytecode at a time, removable in the free-threaded build since Python 3.13.	cs
+6yNuQ6SR49	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AST	Abstract Syntax Tree, the tree representation of source code that compilers, linters, and codemods operate on.	cs
+yeVmlTOh2Q	Basic	Acronyms (AI/Blockchain/Security/DevOps)	LSP	Language Server Protocol, the standard that lets one language server power autocomplete and diagnostics in any editor, and also the Liskov Substitution Principle in SOLID.	cs
+eMaWIN3BTT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	REPL	Read-Eval-Print Loop, an interactive shell that runs each expression as you type it, like the Python or Node prompt.	cs
+RqYdMFtxTx	Basic	Acronyms (AI/Blockchain/Security/DevOps)	FFI	Foreign Function Interface, the mechanism for calling functions written in another language, typically C, from languages like Python or Rust.	cs
+uAxM1ycIXY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ABI	Application Binary Interface, the low-level calling contract between compiled code, and in Ethereum the JSON spec of a contract's functions and events used to encode calls.	cs blockchain
+2IdYoQ2A8N	Basic	Acronyms (AI/Blockchain/Security/DevOps)	POSIX	Portable Operating System Interface, the IEEE standard for Unix-like system calls, shell, and utilities that Linux and macOS largely follow.	cs
+0DRY5h1bwo	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IPC	Inter-Process Communication, mechanisms such as pipes, sockets, shared memory, and signals that let processes exchange data.	cs
+ELdUQP0BOX	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OOM	Out Of Memory, when a process exhausts memory and the Linux OOM killer or Kubernetes terminates it, visible as exit code 137.	devops cs
+yeNM048y8u	Basic	Acronyms (AI/Blockchain/Security/DevOps)	UUID	Universally Unique Identifier, a 128-bit ID where v4 is random and v7 is time-ordered, which keeps database indexes efficient.	cs data
+GPQ46X1H1Z	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SemVer	Semantic Versioning, the MAJOR.MINOR.PATCH scheme where a major bump signals a breaking change.	devops
+njx2YTvBJJ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EOL	End Of Life, the date after which a product or runtime version stops getting security patches.	devops
+YkGFZzSqB7	Basic	Acronyms (AI/Blockchain/Security/DevOps)	LTS	Long-Term Support, a release line that gets security and bug fixes for years, like Node.js even-numbered releases or Ubuntu 24.04.	devops
+cAuQnos8gp	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ACID	Atomicity, Consistency, Isolation, Durability, the guarantees a transactional database gives so each transaction is all-or-nothing and survives crashes.	data
+pMLaz7ttNE	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BASE	Basically Available, Soft state, Eventually consistent, the looser guarantee many distributed NoSQL stores offer in place of ACID.	data
+nPREgYkedH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CAP	The theorem that a distributed data store facing a network partition must choose between Consistency and Availability.	data
+nnGQZHQi5X	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OLTP	Online Transaction Processing, workloads of many small reads and writes, such as orders and logins, served by row stores like Postgres.	data
+3LLajLndXJ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OLAP	Online Analytical Processing, workloads of large scans and aggregations served by columnar stores like BigQuery, Snowflake, or ClickHouse.	data
+bBpe9jnNRm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ETL	Extract, Transform, Load, the pipeline pattern that reshapes data before loading it into a warehouse, while ELT loads raw data first and transforms it in place.	data
+4sKc5JTpHh	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CDC	Change Data Capture, streaming every insert, update, and delete from a database's log to downstream systems, as Debezium does.	data
+uYqcten2nM	Basic	Acronyms (AI/Blockchain/Security/DevOps)	WAL	Write-Ahead Log, the append-only log a database writes changes to before applying them, which enables crash recovery and replication.	data
+pyeT2jJLPi	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MVCC	Multi-Version Concurrency Control, where a database keeps row versions so readers never block writers, as Postgres does.	data
+Uu4ioMsmOd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CRDT	Conflict-free Replicated Data Type, a data structure that replicas can edit independently and always merge without conflicts, used in collaborative editors.	data
+jIYPdnmvL2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CQRS	Command Query Responsibility Segregation, splitting the write model from the read model so each can scale and evolve on its own.	cs data
+qWVCdBj8sM	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DDD	Domain-Driven Design, modeling software around the business domain with a shared vocabulary and bounded contexts.	cs
+PzFKwVVmbs	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TDD	Test-Driven Development, writing a failing test first, then the minimum code to pass it, then refactoring.	cs
+DF9Drxc0ER	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SOLID	Five object-oriented design principles: Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion.	cs
+fKav2Bbodu	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DRY	Don't Repeat Yourself, the principle that each piece of knowledge should have one authoritative representation in a codebase.	cs
+0yJvlPCQLh	Basic	Acronyms (AI/Blockchain/Security/DevOps)	YAGNI	You Aren't Gonna Need It, the principle of not building functionality until a concrete need exists.	cs
+1x5ex3NHJI	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MVC	Model-View-Controller, the pattern that separates data, presentation, and input handling, used by Rails, Django, and ASP.NET.	cs web
+Fd82yHgPoO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MVP	Minimum Viable Product, the smallest version of a product that tests its core hypothesis with real users.	cs
+PcDDCzvkRN	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DAG	Directed Acyclic Graph, a graph with no cycles that models task dependencies in Airflow and build systems and orders transactions in some ledgers.	cs data blockchain
+KIlYS8ilEe	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SIMD	Single Instruction, Multiple Data, CPU vector instructions like AVX that apply one operation to many values at once.	cs ai
+iCuzWBOkxR	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CI/CD	Continuous Integration and Continuous Delivery or Deployment, automatically building and testing every change and shipping passing builds to production.	devops
+XqRpBmvpnE	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IaC	Infrastructure as Code, defining servers, networks, and permissions in versioned files applied by tools like Terraform or Pulumi.	devops
+FVPf698MV0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HCL	HashiCorp Configuration Language, the declarative syntax Terraform and other HashiCorp tools use for configuration.	devops
+OomsD9cc3v	Basic	Acronyms (AI/Blockchain/Security/DevOps)	K8s	Kubernetes, the container orchestrator that schedules pods across a cluster and reconciles it toward declared state, with 8 standing for the eight letters between K and s.	devops
+QMCF4B7Jvb	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HPA	Horizontal Pod Autoscaler, the Kubernetes controller that adds or removes pod replicas based on CPU, memory, or custom metrics.	devops
+FUJ2U4pO5e	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CRD	Custom Resource Definition, the Kubernetes extension that adds new resource types which operators then manage.	devops
+bbuctmeV4j	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CNI	Container Network Interface, the plugin standard that wires pod networking in Kubernetes, implemented by Calico, Cilium, and others.	devops networking
+ANFGBAtBDz	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OCI	Open Container Initiative, the Linux Foundation project that standardizes container image and runtime formats, and also Oracle Cloud Infrastructure.	devops
+uYrpJTp8lZ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	S3	Simple Storage Service, AWS object storage whose API became the de facto standard that MinIO, R2, and GCS interoperability layers copy.	devops data
+nBH6o3D3Ua	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EC2	Elastic Compute Cloud, the AWS service for renting virtual machines by the second.	devops
+KPKnSEptjF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ARN	Amazon Resource Name, the globally unique string that identifies any AWS resource in IAM policies and API calls.	devops
+3lJcxQAwlg	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IaaS	Infrastructure as a Service, renting raw compute, storage, and networking, as with EC2 or Compute Engine.	devops
+zD15juOnaa	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PaaS	Platform as a Service, where the provider runs the servers and runtime so you only deploy code, as with Heroku or Vercel.	devops
+NJ8twt4n5S	Basic	Acronyms (AI/Blockchain/Security/DevOps)	FaaS	Function as a Service, serverless compute that runs a function per event and bills per invocation, as with AWS Lambda.	devops
+i2J92jOXwR	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HA	High Availability, designing a system with redundancy and failover so it stays up when individual components fail.	devops
+qXbb9fBlvZ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SRE	Site Reliability Engineering, Google's discipline of running operations as software engineering, with error budgets and automation.	devops
+KSKI4Fi70N	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SLA	Service Level Agreement, a contractual uptime or performance promise to customers with penalties if missed.	devops
+9hJ8DELZAw	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SLO	Service Level Objective, an internal reliability target such as 99.9% of requests under 300 ms over 30 days.	devops
+5QfdqnHEPi	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SLI	Service Level Indicator, the measured metric, such as latency or error rate, that an SLO is judged against.	devops
+tEoS9kxwu0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MTTR	Mean Time To Recovery, the average time to restore service after an incident.	devops
+KwYsYKG9dT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RTO	Recovery Time Objective, the maximum acceptable downtime after a disaster before service must be restored.	devops
+qEuFQvcb4I	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RPO	Recovery Point Objective, the maximum acceptable data loss measured in time, which sets how often you back up or replicate.	devops
+bcrGXoJemC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	APM	Application Performance Monitoring, tooling like Datadog or New Relic that traces requests and measures latency and errors across services.	devops
+4u1nZSfSOr	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OTel	OpenTelemetry, the vendor-neutral CNCF standard and SDKs for emitting traces, metrics, and logs.	devops
+iheiI7w7Xm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DORA	DevOps Research and Assessment, whose four metrics are deploy frequency, lead time, change failure rate, and time to restore, and also the EU's Digital Operational Resilience Act.	devops
+sNNFqpfsLe	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IOPS	Input/Output Operations Per Second, the throughput measure for storage devices and cloud disks.	devops data
+GUtT0GZsUS	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GPT	Generative Pre-trained Transformer, a decoder-only transformer pretrained to predict the next token, the architecture family behind most chat LLMs.	ai
+lSL6E3W7V5	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BERT	Bidirectional Encoder Representations from Transformers, Google's 2018 encoder-only model pretrained by masking words, still common for classification and embeddings.	ai
+5RYcse53CK	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RAG	Retrieval-Augmented Generation, fetching relevant documents from a search index and putting them in the prompt so an LLM answers from sources.	ai
+yREf1H7LeN	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RLHF	Reinforcement Learning from Human Feedback, training a reward model on human preference rankings and then optimizing the LLM against it.	ai
+IKRaW70kr2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RLAIF	Reinforcement Learning from AI Feedback, RLHF with preference labels generated by a model, as in Anthropic's Constitutional AI.	ai
+1H9RGtUMcC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DPO	Direct Preference Optimization, which fine-tunes on preferred versus rejected response pairs directly, with no separate reward model or RL loop.	ai
+Q0Bttdfgj5	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PPO	Proximal Policy Optimization, the clipped policy-gradient RL algorithm used in the original RLHF pipelines.	ai
+6jLQgpsqz2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GRPO	Group Relative Policy Optimization, DeepSeek's PPO variant that drops the value network and scores each sampled answer against its group's average reward.	ai
+GJQx8fqgw2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SFT	Supervised Fine-Tuning, training a pretrained model on curated prompt and response pairs to teach it a format or behavior.	ai
+nFrcngBjz2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PEFT	Parameter-Efficient Fine-Tuning, methods that adapt a model by training a small fraction of its parameters, and the Hugging Face library of the same name.	ai
+DaKiOOInW6	Basic	Acronyms (AI/Blockchain/Security/DevOps)	LoRA	Low-Rank Adaptation, which freezes a model's weights and trains small low-rank matrices added to them, cutting fine-tuning memory dramatically.	ai
+KeFscF2cmr	Basic	Acronyms (AI/Blockchain/Security/DevOps)	QLoRA	Quantized LoRA, which trains LoRA adapters on top of a 4-bit quantized base model so large models fine-tune on one GPU.	ai
+n91wZbKdIY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MoE	Mixture of Experts, an architecture where a router sends each token to a few expert sub-networks, so only a fraction of parameters run per token.	ai
+HCPVSHMXtY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KV cache	Key-Value cache, stored attention keys and values for past tokens so an LLM does not recompute them for each new token, and the main memory cost of long contexts.	ai
+udf3FQlM5W	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GQA	Grouped-Query Attention, where groups of query heads share one key and value head, shrinking the KV cache with little quality loss.	ai
+5lzx08ed5w	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RoPE	Rotary Position Embedding, which encodes token position by rotating query and key vectors, used by Llama and most modern LLMs.	ai
+1EUMrNE2Ut	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MLP	Multi-Layer Perceptron, a stack of fully connected layers with nonlinearities, and the feed-forward block inside every transformer layer.	ai
+sGCMuj7lSJ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CNN	Convolutional Neural Network, which slides learned filters over grid data like images to detect local patterns.	ai
+6n9O5KzT08	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RNN	Recurrent Neural Network, which processes sequences one step at a time while carrying a hidden state, largely displaced by transformers.	ai
+9s9ta9AcaN	Basic	Acronyms (AI/Blockchain/Security/DevOps)	LSTM	Long Short-Term Memory, an RNN with gates that control what to remember and forget, easing the vanishing gradient problem.	ai
+VMCazvsrWx	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GAN	Generative Adversarial Network, a generator and discriminator trained against each other until the generator's fakes fool the discriminator.	ai
+037kLbCrQr	Basic	Acronyms (AI/Blockchain/Security/DevOps)	VAE	Variational Autoencoder, a generative model that encodes inputs into a probabilistic latent space, used as the image compressor in latent diffusion.	ai
+UJOxHlaGD7	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ViT	Vision Transformer, which splits an image into patches and processes them as tokens with a standard transformer.	ai
+oCgpYxfue1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CLIP	Contrastive Language-Image Pre-training, OpenAI's model that embeds images and text in one shared space, used for zero-shot classification and guiding image generation.	ai
+SxE29UkP6y	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GNN	Graph Neural Network, which learns over nodes and edges by passing messages between neighbors, used for molecules, fraud, and recommendations.	ai
+3GnJTckasi	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SGD	Stochastic Gradient Descent, updating weights with gradients from small random batches instead of the full dataset.	ai
+BESnLzaka5	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ReLU	Rectified Linear Unit, the activation max(0, x) that made deep networks train reliably.	ai
+qu9MSqnQGv	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MSE	Mean Squared Error, the average of squared differences between predictions and targets, the default regression loss.	ai
+9TOrIGmpLd	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MLE	Maximum Likelihood Estimation, choosing the parameters that make the observed data most probable, which is what cross-entropy training does.	ai
+FTsvXNphsQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KL	Kullback-Leibler divergence, a measure of how one probability distribution differs from another, used as the penalty that keeps an RLHF policy near its base model.	ai
+PkpUDMzGLq	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PCA	Principal Component Analysis, which projects data onto the orthogonal directions of greatest variance to reduce dimensions.	ai data
+MVRZzZyY8V	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SVM	Support Vector Machine, a classifier that finds the maximum-margin boundary between classes, optionally in a kernel-mapped space.	ai
+bSTL4gSsOt	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MDP	Markov Decision Process, the formal model of states, actions, transition probabilities, and rewards underlying reinforcement learning.	ai
+0wHE8BGojv	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MCTS	Monte Carlo Tree Search, a planning algorithm that explores a game tree by random rollouts, used by AlphaGo.	ai
+GHpee5rfPF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ANN	Approximate Nearest Neighbor search, which trades a little recall for large speedups when finding similar vectors, and also Artificial Neural Network.	ai data
+51HltR1E5U	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HNSW	Hierarchical Navigable Small World, the layered graph index most vector databases use for fast approximate nearest neighbor search.	ai data
+Lqa572YaUx	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BM25	Best Matching 25, the lexical ranking function behind Elasticsearch and Lucene, often combined with vector search in hybrid RAG.	ai data
+3GH88VsZi0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TF-IDF	Term Frequency times Inverse Document Frequency, a word weight that rises with frequency in a document and falls with frequency across the corpus.	ai data
+3thNcOCcJV	Basic	Acronyms (AI/Blockchain/Security/DevOps)	NER	Named Entity Recognition, tagging spans of text as people, organizations, locations, dates, and other entity types.	ai
+rzdnl1b2VH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ASR	Automatic Speech Recognition, converting spoken audio to text, as Whisper does.	ai
+M6PchgfTsY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TTS	Text-To-Speech, synthesizing natural-sounding spoken audio from text.	ai
+omihHghJWf	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CoT	Chain of Thought, prompting or training a model to write out intermediate reasoning steps before its final answer.	ai
+nQUd8spUKu	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ReAct	Reason plus Act, an agent pattern where an LLM alternates between reasoning text and tool calls, reading each result before the next step.	ai
+WyRgd0P5io	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ICL	In-Context Learning, a model picking up a task from examples in the prompt with no weight updates.	ai
+685TPF29GC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HITL	Human-In-The-Loop, a design where a person reviews or approves model outputs or agent actions before they take effect.	ai
+Z68ElPAvrA	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MCP	Model Context Protocol, Anthropic's open protocol, released in November 2024, that connects AI apps to tools and data through standard servers.	ai
+WYa5P92FdF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	A2A	Agent2Agent, Google's open protocol, released in April 2025, for agents from different vendors to discover each other and delegate tasks.	ai
+z1BR0Gr6ZO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MLOps	Machine Learning Operations, the practices and tooling for versioning, deploying, monitoring, and retraining models in production.	ai devops
+wRuxZKY5gF	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SAE	Sparse Autoencoder, an interpretability tool that decomposes a model's activations into many sparsely active, human-readable features.	ai
+EOfJNrlPFc	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OOD	Out-Of-Distribution, inputs that differ from the training data, where model accuracy and calibration tend to degrade.	ai
+nILbLnw7UP	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SOTA	State Of The Art, the best published result on a benchmark at a given time.	ai
+p7mIVQewMY	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MMLU	Massive Multitask Language Understanding, a 57-subject multiple-choice benchmark for LLM knowledge, now largely saturated by frontier models.	ai
+OQ1mj9wqb0	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BLEU	Bilingual Evaluation Understudy, a metric that scores machine translation by n-gram overlap with reference translations.	ai
+UNigG9DuLt	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AUC	Area Under the ROC Curve, the probability a classifier ranks a random positive above a random negative, where 0.5 is chance.	ai
+azSk0yVJiA	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EMA	Exponential Moving Average, a running average that weights recent values more, used for smoothed model weights and in trading indicators.	ai
+L8ggALiy40	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DP	Differential Privacy, adding calibrated noise so no single person's data measurably changes an output, and also Dynamic Programming.	ai security cs
+jpVCA3enpI	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TPS	Tokens Per Second for LLM inference speed, and Transactions Per Second for blockchain throughput.	ai blockchain
+mc2h0s8ey1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TTFT	Time To First Token, the latency between sending a prompt and receiving the first streamed token, dominated by prompt prefill.	ai
+CuGjkonOks	Basic	Acronyms (AI/Blockchain/Security/DevOps)	FLOPs	Floating-Point Operations, the unit for model training compute, while FLOPS with a capital S means operations per second of hardware.	ai
+i8XpfeUAwQ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TPU	Tensor Processing Unit, Google's custom accelerator chip for neural network matrix math.	ai
+Dcoek16mAu	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CUDA	Compute Unified Device Architecture, NVIDIA's platform and programming model for running general computation on its GPUs.	ai
+k9wQj1jPlC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	HBM	High Bandwidth Memory, stacked DRAM beside the GPU die whose capacity and bandwidth often limit LLM inference more than compute does.	ai
+ZWgmb28we6	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BF16	bfloat16, a 16-bit float format that keeps float32's exponent range with less precision, the default for training large models.	ai
+yBQIfaSewm	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GEMM	General Matrix Multiply, the core operation that dominates neural network compute and that GPU kernels are optimized around.	ai
+EnlOW0kRKA	Basic	Acronyms (AI/Blockchain/Security/DevOps)	NCCL	NVIDIA Collective Communications Library, which runs all-reduce and other collectives across GPUs for distributed training.	ai
+e4vL7Iccoe	Basic	Acronyms (AI/Blockchain/Security/DevOps)	FSDP	Fully Sharded Data Parallel, PyTorch's training strategy that shards parameters, gradients, and optimizer state across GPUs.	ai
+1U7Sb63cLD	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ONNX	Open Neural Network Exchange, an open model format for moving trained models between frameworks and inference runtimes.	ai
+ep49huDAXC	Basic	Acronyms (AI/Blockchain/Security/DevOps)	GGUF	The single-file model format from the llama.cpp and ggml project that packs quantized weights and metadata for local inference.	ai
+CXh23zZPdT	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PoW	Proof of Work, consensus where miners race to find a hash below a target, securing Bitcoin with energy expenditure.	blockchain
+RmCniJQdMP	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PoS	Proof of Stake, consensus where validators lock up tokens as collateral that can be slashed for misbehavior, used by Ethereum since the September 2022 Merge.	blockchain
+6VtiKJWjH7	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PoH	Proof of History, Solana's verifiable delay function clock that timestamps events so validators agree on ordering without constant messaging.	blockchain
+2mXobatp31	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BFT	Byzantine Fault Tolerance, the ability of a distributed system to reach agreement even when fewer than a third of nodes act arbitrarily or maliciously.	blockchain cs
+a8jlpDTBUf	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EVM	Ethereum Virtual Machine, the stack-based runtime that executes smart contract bytecode and charges gas per opcode, copied by many other chains.	blockchain
+DfBEqeze5v	Basic	Acronyms (AI/Blockchain/Security/DevOps)	EOA	Externally Owned Account, an Ethereum account controlled by a private key, as opposed to a contract account controlled by code.	blockchain
+bh0rFZBnF2	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ERC	Ethereum Request for Comments, the application-level standards such as ERC-20 fungible tokens, ERC-721 NFTs, and ERC-4337 account abstraction.	blockchain
+pNJT7vizx1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AA	Account Abstraction, making user accounts programmable smart contract wallets with features like social recovery and gas sponsorship, as ERC-4337 does.	blockchain
+o0cs11Sk9N	Basic	Acronyms (AI/Blockchain/Security/DevOps)	BIP	Bitcoin Improvement Proposal, the design documents behind standards such as BIP-32 HD wallets and BIP-39 seed phrases.	blockchain
+bXhHG2XCvJ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	UTXO	Unspent Transaction Output, Bitcoin's accounting model where coins are discrete outputs that each transaction consumes whole and creates anew.	blockchain
+xUptZSNeZ6	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SPV	Simplified Payment Verification, checking that a transaction is in a block with only block headers and a Merkle proof, as light wallets do.	blockchain
+aZQK8zFLXk	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MPT	Merkle Patricia Trie, the authenticated key-value tree Ethereum uses to commit all account state to one root hash.	blockchain
+afl9HAX25K	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DeFi	Decentralized Finance, lending, trading, and derivatives run by smart contracts with no intermediary custodian.	blockchain
+zzDiVyEeby	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AMM	Automated Market Maker, a DEX design that prices trades from a formula over pooled reserves, such as Uniswap's x times y equals k.	blockchain
+9BF0ZsUcW4	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TVL	Total Value Locked, the dollar value of assets deposited in a DeFi protocol's contracts.	blockchain
+Wh5ZJHsCqn	Basic	Acronyms (AI/Blockchain/Security/DevOps)	APY	Annual Percentage Yield, the yearly return including compounding, which APR excludes.	blockchain
+WbJFvIhhie	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TWAP	Time-Weighted Average Price, a price averaged over a window, used as an oracle input that resists single-block manipulation.	blockchain
+Qg7Og2VCdR	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MEV	Maximal Extractable Value, profit a block producer or searcher gains by reordering, inserting, or censoring transactions, as in sandwich attacks.	blockchain
+HJfyE3OyzU	Basic	Acronyms (AI/Blockchain/Security/DevOps)	PBS	Proposer-Builder Separation, splitting block building from block proposing so specialized builders compete to capture MEV.	blockchain
+RhZ1UQLJTk	Basic	Acronyms (AI/Blockchain/Security/DevOps)	L2	Layer 2, a network like Arbitrum or Base that executes transactions off the main chain and posts data or proofs back to it for security.	blockchain
+lWCJNW986l	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DA	Data Availability, the guarantee that the data behind a block or rollup batch was published so anyone can reconstruct and verify state.	blockchain
+WMxB5ZM12c	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ZKP	Zero-Knowledge Proof, a proof that a statement is true which reveals nothing beyond its truth, the basis of zk-rollups and private transactions.	blockchain crypto
+JVHt2YOCqj	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SNARK	Succinct Non-interactive ARgument of Knowledge, a small, fast-to-verify zero-knowledge proof that often needs a trusted setup.	blockchain crypto
+f1tiWUyjhh	Basic	Acronyms (AI/Blockchain/Security/DevOps)	STARK	Scalable Transparent ARgument of Knowledge, a hash-based proof with no trusted setup and plausible post-quantum security, at the cost of larger proofs.	blockchain crypto
+DW8osoSgfX	Basic	Acronyms (AI/Blockchain/Security/DevOps)	zkEVM	A zero-knowledge rollup that proves correct execution of EVM bytecode, so existing Ethereum contracts run on it unchanged.	blockchain
+fHkKxX87gZ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	MPC	Multi-Party Computation, where several parties jointly compute over private inputs, used by custody wallets so no single machine holds the full key.	blockchain crypto
+bHNkdIKlyO	Basic	Acronyms (AI/Blockchain/Security/DevOps)	TSS	Threshold Signature Scheme, where any t of n key-share holders together produce one ordinary-looking signature.	blockchain crypto
+bPItas7EKH	Basic	Acronyms (AI/Blockchain/Security/DevOps)	VRF	Verifiable Random Function, which produces randomness with a proof anyone can check, used by Chainlink VRF and validator selection.	blockchain crypto
+fF6ECcndHh	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DAO	Decentralized Autonomous Organization, a group governed by token-holder votes executed through smart contracts.	blockchain
+4GWWVL4KAZ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	dApp	Decentralized Application, an app whose backend logic runs as smart contracts on a blockchain.	blockchain
+EyqHq6wE8r	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IBC	Inter-Blockchain Communication, the Cosmos protocol for trust-minimized messaging and token transfers between chains.	blockchain
+5d1N6jzMv1	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SPL	Solana Program Library, the set of on-chain programs that includes Solana's SPL token standard.	blockchain
+vc8DvOAW6Q	Basic	Acronyms (AI/Blockchain/Security/DevOps)	IPFS	InterPlanetary File System, a peer-to-peer network that addresses files by the hash of their content instead of their location.	blockchain data
+WEM9RRr2pD	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CID	Content Identifier, the self-describing hash address of data in IPFS, so identical content always gets the same CID.	blockchain data
+mS8HL9XDCB	Basic	Acronyms (AI/Blockchain/Security/DevOps)	ENS	Ethereum Name Service, which maps readable names like alice.eth to addresses and other records.	blockchain
+2ljfJ78uKb	Basic	Acronyms (AI/Blockchain/Security/DevOps)	DID	Decentralized Identifier, a W3C standard for identifiers a subject controls cryptographically with no central registry.	blockchain security
+1BbAQBQ3Ih	Basic	Acronyms (AI/Blockchain/Security/DevOps)	VC	Verifiable Credential, a W3C standard for tamper-evident, cryptographically signed claims such as a diploma, and also venture capital.	blockchain security
+ZWfS6cyhGl	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SIWE	Sign-In With Ethereum, the EIP-4361 standard for logging into apps by signing a structured message with a wallet.	blockchain security
+OJM66rNV2h	Basic	Acronyms (AI/Blockchain/Security/DevOps)	SBT	Soulbound Token, a non-transferable token bound to one wallet, proposed for credentials and reputation.	blockchain
+7L0adkXv2p	Basic	Acronyms (AI/Blockchain/Security/DevOps)	LST	Liquid Staking Token, a token like Lido's stETH that represents staked assets and stays tradable while the stake earns rewards.	blockchain
+7kV0rWzh3d	Basic	Acronyms (AI/Blockchain/Security/DevOps)	RWA	Real-World Assets, off-chain assets such as Treasury bills, real estate, or credit tokenized on a blockchain.	blockchain
+2lOwffrnKX	Basic	Acronyms (AI/Blockchain/Security/DevOps)	CBDC	Central Bank Digital Currency, a digital form of a nation's currency issued directly by its central bank.	blockchain
+y99mcIrKu5	Basic	Acronyms (AI/Blockchain/Security/DevOps)	KYC	Know Your Customer, the identity verification regulated financial services and exchanges must perform on users.	blockchain security
+zHKHwzKS88	Basic	Acronyms (AI/Blockchain/Security/DevOps)	AML	Anti-Money Laundering, the laws and monitoring that detect and report illicit fund flows, applied to exchanges and stablecoin issuers.	blockchain security
+Keu38bpsjZ	Basic	Acronyms (AI/Blockchain/Security/DevOps)	OFAC	Office of Foreign Assets Control, the US Treasury office that maintains sanctions lists, including crypto addresses, as in the 2022 Tornado Cash designation.	blockchain security
