@@ -6,7 +6,9 @@
 	import StatTile from '$lib/components/deck/StatTile.svelte';
 	import StudyLink from '$lib/components/deck/StudyLink.svelte';
 
-	let { data } = $props();
+	let { data, form } = $props();
+
+	const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 	type Row = (typeof data.mastery)[number];
 	type Key = 'tag' | 'cards' | 'reviewed' | 'stability' | 'score';
@@ -213,5 +215,22 @@
 		{:else}
 			<p class="text-muted mt-3 text-sm">No finished rounds yet.</p>
 		{/if}
+	</section>
+
+	<!-- Plain form with a required checkbox: works without JavaScript, and one click cannot delete. -->
+	<section class="border-line mt-12 border-t pt-6">
+		<h2 class="eyebrow text-again">Delete deck</h2>
+		<form method="POST" action="?/delete" class="mt-3 flex flex-wrap items-center gap-4">
+			<input type="hidden" name="deck" value={data.deck} />
+			<label class="text-muted flex items-center gap-2 text-sm">
+				<input type="checkbox" name="confirm" value="yes" required />
+				Delete {plural(data.total, 'card')}, their review history and {plural(
+					data.history.length,
+					'round'
+				)}. This cannot be undone.
+			</label>
+			<button class="btn border-again/40 text-again hover:bg-again/10">Delete deck</button>
+			{#if form?.message}<p class="text-again text-sm" role="alert">{form.message}</p>{/if}
+		</form>
 	</section>
 </main>

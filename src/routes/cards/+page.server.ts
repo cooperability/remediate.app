@@ -8,12 +8,14 @@ import type { Actions, PageServerLoad } from './$types';
 // source decks are 0.4 MB and 0.5 MB.
 const MAX_IMPORT_BYTES = 4 * 1024 * 1024;
 
-export const load: PageServerLoad = async ({ cookies, locals }) => {
+export const load: PageServerLoad = async ({ cookies, locals, url }) => {
 	const [decks, stats] = await Promise.all([
 		listDecks(locals.user!.id),
 		overview(locals.user!.id, new Date(), toTimeZone(cookies.get(TZ_COOKIE)))
 	]);
-	return { decks, stats };
+	// Set by the deck page's delete action on its way here.
+	const deleted = url.searchParams.get('deleted')?.slice(0, 200) || null;
+	return { decks, stats, deleted };
 };
 
 export const actions: Actions = {

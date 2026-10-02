@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { Grade } from 'ts-fsrs';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
@@ -43,6 +43,61 @@ export async function importDeck(userId: string, raw: string) {
 		}
 	});
 	return { imported: notes.length, warnings };
+}
+
+/**
+ * Delete a deck: its cards, their schedules and review history, and the deck's
+ * rounds. A harvested link that became one of these cards goes back to review.
+ * All or nothing (a savepoint inside the request). Returns the cards deleted.
+ */
+export async function deleteDeck(userId: string, deck: string): Promise<number> {
+	return db.transaction(async (tx) => {
+		const n = table.node;
+		const ids = (
+			await tx
+				.select({ id: n.id })
+				.from(n)
+				// Cards only, as the deck page counts them. Other kinds that carry a deck
+				// name (a Quest deck hall) belong to their own writers.
+				.where(and(eq(n.userId, userId), eq(n.deck, deck), eq(n.kind, 'card')))
+		).map((r) => r.id);
+		const rounds = (
+			await tx
+				.select({ id: table.assessment.id })
+				.from(table.assessment)
+				.where(and(eq(table.assessment.userId, userId), eq(table.assessment.deck, deck)))
+		).map((r) => r.id);
+		if (ids.length === 0 && rounds.length === 0) return 0;
+
+		const log = table.reviewLog;
+		if (ids.length)
+			await tx.delete(log).where(and(eq(log.userId, userId), inArray(log.nodeId, ids)));
+		if (rounds.length)
+			await tx.delete(log).where(and(eq(log.userId, userId), inArray(log.assessmentId, rounds)));
+		if (ids.length) {
+			await tx
+				.delete(table.reviewState)
+				.where(and(eq(table.reviewState.userId, userId), inArray(table.reviewState.nodeId, ids)));
+			const e = table.edge;
+			await tx
+				.delete(e)
+				.where(and(eq(e.userId, userId), or(inArray(e.srcId, ids), inArray(e.dstId, ids))));
+			await tx
+				.update(table.harvest)
+				.set({ nodeId: null, status: 'ready' })
+				.where(and(eq(table.harvest.userId, userId), inArray(table.harvest.nodeId, ids)));
+			await tx
+				.update(table.questRun)
+				.set({ currentNodeId: null })
+				.where(and(eq(table.questRun.userId, userId), inArray(table.questRun.currentNodeId, ids)));
+		}
+		if (rounds.length)
+			await tx
+				.delete(table.assessment)
+				.where(and(eq(table.assessment.userId, userId), inArray(table.assessment.id, rounds)));
+		if (ids.length) await tx.delete(n).where(and(eq(n.userId, userId), inArray(n.id, ids)));
+		return ids.length;
+	});
 }
 
 export async function listDecks(userId: string, now = new Date()) {
