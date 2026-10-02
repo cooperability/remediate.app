@@ -60,7 +60,7 @@
 		if (!current || !flipped || busy) return;
 		busy = true;
 		try {
-			const stored: { rating: number } = await post('/api/review/grade', {
+			const stored: { rating: number; preview: string[] | null } = await post('/api/review/grade', {
 				assessmentId: data.assessmentId,
 				nodeId: current.card.id,
 				rating,
@@ -70,7 +70,13 @@
 			if (head.repeats === 0) done += 1;
 			queue =
 				stored.rating === 1 && head.repeats < MAX_REPEATS
-					? [...rest, { ...head, repeats: head.repeats + 1 }]
+					? [
+							...rest,
+							{
+								card: { ...head.card, preview: stored.preview ?? head.card.preview },
+								repeats: head.repeats + 1
+							}
+						]
 					: rest;
 			flipped = false;
 			if (queue.length === 0) await finish();
@@ -171,7 +177,13 @@
 			{/key}
 
 			<div class="bg-bg/85 sticky bottom-0 -mx-4 mt-auto px-4 py-3 backdrop-blur">
-				<RatingBar {flipped} {busy} onflip={() => (flipped = true)} onrate={rate} />
+				<RatingBar
+					{flipped}
+					{busy}
+					hints={current.card.preview}
+					onflip={() => (flipped = true)}
+					onrate={rate}
+				/>
 			</div>
 		{:else if busy}
 			<p class="text-muted mt-16 text-center text-sm">Scoring the round…</p>

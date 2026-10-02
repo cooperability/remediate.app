@@ -4,10 +4,17 @@
 	let {
 		flipped,
 		busy,
+		hints,
 		onflip,
 		onrate
-	}: { flipped: boolean; busy: boolean; onflip: () => void; onrate: (rating: number) => void } =
-		$props();
+	}: {
+		flipped: boolean;
+		busy: boolean;
+		/** Interval each rating would schedule, Again to Easy. */
+		hints?: string[];
+		onflip: () => void;
+		onrate: (rating: number) => void;
+	} = $props();
 </script>
 
 {#if !flipped}
@@ -22,7 +29,12 @@
 				disabled={busy}
 				onclick={() => onrate(r.value)}
 			>
-				{r.label}
+				<span class="flex flex-col items-start leading-tight">
+					{r.label}
+					{#if hints?.[r.value - 1]}
+						<span class="font-mono text-xs font-normal opacity-80">{hints[r.value - 1]}</span>
+					{/if}
+				</span>
 				<span class="kbd">{r.key}</span>
 			</button>
 		{/each}

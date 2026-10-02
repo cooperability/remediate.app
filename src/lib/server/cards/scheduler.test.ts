@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { grade, retrievability } from './scheduler';
+import { formatInterval, grade, previewIntervals, retrievability } from './scheduler';
 
 const DAY = 86_400_000;
 const now = new Date('2026-09-01T12:00:00Z');
@@ -64,5 +64,33 @@ describe('retrievability', () => {
 		expect(r2w).toBeLessThan(r0);
 		expect(r6w).toBeLessThan(r2w);
 		expect(r6w).toBeGreaterThan(0);
+	});
+});
+
+describe('interval previews', () => {
+	it.each([
+		[30_000, '1m'],
+		[10 * 60_000, '10m'],
+		[3 * 3_600_000, '3h'],
+		[4 * DAY, '4d'],
+		[63 * DAY, '2.1mo'],
+		[400 * DAY, '1.1y'],
+		[4000 * DAY, '11y']
+	])('formats %i ms as %s', (ms, label) => {
+		expect(formatInterval(ms)).toBe(label);
+	});
+
+	it('gives a new card four labels, shortest for Again', () => {
+		const labels = previewIntervals(null, now);
+		expect(labels).toHaveLength(4);
+		expect(labels[0]).toMatch(/m$/);
+	});
+
+	it('orders a review card Again < Hard < Good < Easy', () => {
+		const days = previewIntervals(reviewCard(now), now);
+		expect(days[0]).toMatch(/m$/);
+		const d = days.slice(1).map((l) => parseFloat(l) * (l.endsWith('mo') ? 30 : 1));
+		expect(d[0]).toBeLessThan(d[1]);
+		expect(d[1]).toBeLessThan(d[2]);
 	});
 });
