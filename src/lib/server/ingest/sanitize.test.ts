@@ -84,8 +84,10 @@ describe('allowlist', () => {
 	});
 
 	it('drops style and event attributes but keeps class, src and alt', () => {
-		const out = sanitizeCardHtml('<img src="/a.png" alt="a" class="c" style="x" onclick="y">');
-		expect(out).toContain('src="/a.png"');
+		const out = sanitizeCardHtml(
+			'<img src="https://a.test/a.png" alt="a" class="c" style="x" onclick="y">'
+		);
+		expect(out).toContain('src="https://a.test/a.png"');
 		expect(out).toContain('alt="a"');
 		expect(out).toContain('class="c"');
 		expect(out).not.toContain('style');
@@ -131,5 +133,49 @@ describe('the real corpus', () => {
 		expect(out).not.toContain('<script');
 		expect(out).not.toContain('javascript:');
 		expect(out).not.toContain('onerror');
+	});
+});
+
+describe('card media', () => {
+	it('drops the src of a bare Anki media filename and names it instead', () => {
+		const out = sanitizeCardHtml('<img src="Screenshot 2022-12-12 at 4.00.40 PM.png">');
+		expect(out).not.toContain('src=');
+		expect(out).toContain('alt="[image: Screenshot 2022-12-12 at 4.00.40 PM.png]"');
+		expect(out).toContain('class="media-missing"');
+	});
+
+	it.each(['../secret.png', '/cards/x.png', '//evil.test/x.png', 'javascript:alert(1)'])(
+		'fetches nothing for %s',
+		(src) => {
+			expect(sanitizeCardHtml(`<img src="${src}">`)).not.toContain('src=');
+		}
+	);
+
+	it('keeps https and data images', () => {
+		expect(sanitizeCardHtml('<img src="https://a.test/x.png">')).toContain(
+			'src="https://a.test/x.png"'
+		);
+		expect(sanitizeCardHtml('<img src="data:image/png;base64,AAAA">')).toContain(
+			'src="data:image/png;base64,AAAA"'
+		);
+	});
+
+	it('upgrades http images to https', () => {
+		expect(sanitizeCardHtml('<img src="http://a.test/x.png">')).toContain(
+			'src="https://a.test/x.png"'
+		);
+	});
+
+	it('leaves no fetchable local image in the real exports', () => {
+		for (const f of [
+			'source_data/Anthro (Psych_Soc_Econ_Health).txt',
+			'source_data/CompSci (AIML_Web3_Math_Logic_Tech).txt'
+		]) {
+			const { notes } = parseAnkiExport(readFileSync(f, 'utf8'), 'u');
+			const html = notes.map((n) => n.front + n.back).join('\n');
+			const srcs = [...html.matchAll(/<img[^>]*\ssrc="([^"]*)"/g)].map((m) => m[1]);
+			expect(srcs.filter((s) => !/^(https:|data:image\/)/.test(s))).toEqual([]);
+			expect(html).toContain('media-missing');
+		}
 	});
 });
