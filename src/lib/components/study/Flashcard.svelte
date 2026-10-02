@@ -75,6 +75,15 @@
 		max-width: 100%;
 		height: auto;
 	}
+	/* An Anki media file the export did not carry: the browser shows the alt text. */
+	.card-html :global(img.media-missing) {
+		display: inline-block;
+		padding: 0.1rem 0.5rem;
+		border: 1px dashed var(--line);
+		border-radius: 0.5rem;
+		color: var(--muted);
+		font-size: 0.8em;
+	}
 	.card-html :global(pre),
 	.card-html :global(table) {
 		display: block;
