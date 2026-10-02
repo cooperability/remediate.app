@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { Grade } from 'ts-fsrs';
 import { MAX_REPEATS } from '$lib/cards/round';
-import { recordGrade } from '$lib/server/cards/repo';
+import { cardPreview, recordGrade } from '$lib/server/cards/repo';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -18,6 +18,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 	const stored = await recordGrade(locals.user.id, assessmentId, nodeId, rating as Grade, attempt);
 	if (stored === null) error(404);
-	// A retried attempt keeps its first rating. The client re-queues on this one.
-	return json({ rating: stored });
+	// A retried attempt keeps its first rating. The client re-queues on this one, and
+	// a missed card comes back with labels from its new state.
+	const preview = stored === 1 ? await cardPreview(locals.user.id, nodeId) : null;
+	return json({ rating: stored, preview });
 };

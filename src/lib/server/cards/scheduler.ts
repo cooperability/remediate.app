@@ -3,6 +3,9 @@ import type { ReviewState } from '$lib/server/db/schema';
 
 // TDD R7: ship ts-fsrs defaults until there are 1k+ reviews to fit on.
 const f = fsrs(generatorParameters({ enable_fuzz: true }));
+// Previews show the unfuzzed interval: fuzz is a few percent of it, and a label
+// that changed on every render would read as noise.
+const plain = fsrs(generatorParameters({ enable_fuzz: false }));
 
 type StoredState = Pick<
 	ReviewState,
@@ -61,4 +64,26 @@ export function grade(
 export function retrievability(s: StoredState | null | undefined, now: Date): number | null {
 	if (!s || s.state === 0) return null;
 	return f.get_retrievability(toCard(s, now), now, false);
+}
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+/** "1m", "10m", "3h", "4d", "2.1mo", "1.3y": Anki's button labels. */
+export function formatInterval(ms: number): string {
+	const one = (n: number) => (n < 10 ? n.toFixed(1).replace(/\.0$/, '') : String(Math.round(n)));
+	if (ms < HOUR) return `${Math.max(1, Math.round(ms / MINUTE))}m`;
+	if (ms < DAY) return `${Math.round(ms / HOUR)}h`;
+	if (ms < 30 * DAY) return `${Math.round(ms / DAY)}d`;
+	if (ms < 365 * DAY) return `${one(ms / (30 * DAY))}mo`;
+	return `${one(ms / (365 * DAY))}y`;
+}
+
+/** The interval each rating (Again, Hard, Good, Easy) would schedule, as labels. */
+export function previewIntervals(s: StoredState | null | undefined, now: Date): string[] {
+	const options = plain.repeat(toCard(s, now), now);
+	return ([1, 2, 3, 4] as Grade[]).map((g) =>
+		formatInterval(options[g].card.due.getTime() - now.getTime())
+	);
 }

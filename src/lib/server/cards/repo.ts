@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { parseAnkiExport } from '$lib/server/ingest/anki-tsv';
 import { classify, gradeRound, mergeStanding, standingOf } from './grading';
-import { grade } from './scheduler';
+import { grade, previewIntervals } from './scheduler';
 import { NEW_PER_DAY, ROUND_SIZE, selectRound } from './select';
 
 export async function importDeck(userId: string, raw: string) {
@@ -183,10 +183,16 @@ export async function startRound(userId: string, deck: string, now = new Date(),
 		.where(and(eq(n.userId, userId), eq(n.deck, deck), eq(n.kind, 'card')))
 		.orderBy(asc(n.createdAt), asc(n.id));
 	if (rows.length === 0) return null;
-	const byId = new Map(rows.map((r) => [r.node.id, r.node]));
+	const byId = new Map(rows.map((r) => [r.node.id, r]));
 	const toCard = (id: string) => {
-		const n = byId.get(id)!;
-		return { id: n.id, front: n.front, back: n.back, tags: n.tags };
+		const { node: n, review } = byId.get(id)!;
+		return {
+			id: n.id,
+			front: n.front,
+			back: n.back,
+			tags: n.tags,
+			preview: previewIntervals(review, now)
+		};
 	};
 
 	const open = await db
@@ -401,4 +407,13 @@ export async function finishRound(userId: string, assessmentId: string, now = ne
 		})
 		.where(eq(table.assessment.id, assessmentId));
 	return g;
+}
+
+/** Interval labels for a card's next rating, from its stored state. */
+export async function cardPreview(userId: string, nodeId: string, now = new Date()) {
+	const [review] = await db
+		.select()
+		.from(table.reviewState)
+		.where(and(eq(table.reviewState.nodeId, nodeId), eq(table.reviewState.userId, userId)));
+	return previewIntervals(review ?? null, now);
 }
