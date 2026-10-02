@@ -27,8 +27,13 @@ export async function introducedToday(userId: string, deck: string, now: Date, t
 }
 
 /** New cards each deck may still introduce today. Decks with nothing introduced are absent: read them as NEW_PER_DAY. */
-export async function newLeftByDeck(userId: string, now: Date, tz: string) {
-	const rows = await db
+export async function newLeftByDeck(
+	userId: string,
+	now: Date,
+	tz: string,
+	q: Pick<typeof db, 'select'> = db
+) {
+	const rows = await q
 		.select({
 			deck: table.node.deck,
 			n: sql<number>`count(distinct ${table.reviewLog.nodeId})::int`

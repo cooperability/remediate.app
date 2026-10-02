@@ -23,6 +23,7 @@ import {
 	clearedBy,
 	describeRoom,
 	entrance,
+	forget,
 	gate,
 	holdOf,
 	knows,
@@ -190,6 +191,13 @@ export async function syncImportGraphIn(tx: Tx, userId: string) {
 }
 
 interface Loaded {
+	/**
+	 * The transaction that holds questLock. Every read goes through it: outside
+	 * asTenant, `db` is the pool, and a locked call that also reads through the pool
+	 * needs a second connection while others hold theirs waiting for the lock.
+	 * Ten concurrent calls (the pool's size) then hang.
+	 */
+	q: Tx;
 	ctx: Ctx;
 	layout: ReturnType<typeof cachedLayout>;
 }
@@ -197,10 +205,10 @@ interface Loaded {
 const FACETS: Record<string, Facet> = { deck: 'deck', tag: 'tag' };
 
 /** Everything the rules read, for one user, at `now`. */
-async function loadWorld(userId: string, now: Date, tz: string): Promise<Loaded> {
+async function loadWorld(q: Tx, userId: string, now: Date, tz: string): Promise<Loaded> {
 	const n = table.node;
 	const [nodes, edges, states, newLeft] = await Promise.all([
-		db
+		q
 			.select({
 				id: n.id,
 				kind: n.kind,
@@ -211,12 +219,12 @@ async function loadWorld(userId: string, now: Date, tz: string): Promise<Loaded>
 			})
 			.from(n)
 			.where(and(eq(n.userId, userId), inArray(n.kind, ['card', 'concept']))),
-		db
+		q
 			.select({ srcId: table.edge.srcId, dstId: table.edge.dstId, kind: table.edge.kind })
 			.from(table.edge)
 			.where(eq(table.edge.userId, userId)),
-		db.select().from(table.reviewState).where(eq(table.reviewState.userId, userId)),
-		newLeftByDeck(userId, now, tz)
+		q.select().from(table.reviewState).where(eq(table.reviewState.userId, userId)),
+		newLeftByDeck(userId, now, tz, q)
 	]);
 
 	const worldNodes: WorldNode[] = nodes.map((r) => ({
@@ -237,6 +245,7 @@ async function loadWorld(userId: string, now: Date, tz: string): Promise<Loaded>
 			left.set(node.deck, newLeft.get(node.deck) ?? NEW_PER_DAY);
 	}
 	return {
+		q,
 		ctx: { world, memory, now, newLeft: left },
 		layout: cachedLayout(userId, world)
 	};
@@ -292,14 +301,14 @@ async function locked<T>(
 ): Promise<T> {
 	return db.transaction(async (tx) => {
 		await tx.execute(questLock(userId));
-		const loaded = await loadWorld(userId, now, tz);
+		const loaded = await loadWorld(tx, userId, now, tz);
 		const r = await lockRun(tx, userId, loaded.ctx);
 		return r ? fn(tx, loaded, r) : empty;
 	});
 }
 
-async function cardHtml(userId: string, id: string) {
-	const [c] = await db
+async function cardHtml(q: Tx, userId: string, id: string) {
+	const [c] = await q
 		.select({
 			front: table.node.front,
 			back: table.node.back,
@@ -338,21 +347,23 @@ async function viewOf(
 	const { ctx, layout } = loaded;
 	const room = describeRoom(ctx, run);
 	if (room.facet === 'card') {
-		const c = await cardHtml(userId, room.id);
+		const c = await cardHtml(loaded.q, userId, room.id);
 		if (c) Object.assign(room, { front: c.front, back: c.back, tags: c.tags });
 	}
 	const pending = livePending(ctx, run, state, tz);
-	const encounter = pending && (await encounterCard(userId, ctx, pending.id, pending.nodeId));
+	const encounter =
+		pending && (await encounterCard(loaded.q, userId, ctx, pending.id, pending.nodeId));
 	return { room, map: buildMap(ctx, run, layout), encounter, next: suggest(ctx, run) };
 }
 
 async function encounterCard(
+	q: Tx,
 	userId: string,
 	ctx: Ctx,
 	encounterId: string,
 	nodeId: string
 ): Promise<EncounterCard | null> {
-	const c = await cardHtml(userId, nodeId);
+	const c = await cardHtml(q, userId, nodeId);
 	if (!c) return null;
 	const m = ctx.memory.get(nodeId);
 	return {
@@ -429,7 +440,7 @@ async function open(
 		r.state = { ...r.state, encounter: pending };
 		await tx.update(table.questRun).set({ state: r.state }).where(eq(table.questRun.id, r.row.id));
 	}
-	const card = await encounterCard(userId, loaded.ctx, pending.id, to);
+	const card = await encounterCard(loaded.q, userId, loaded.ctx, pending.id, to);
 	return card ? { ok: true, encounter: card } : { ok: false, reason: 'unknown-node' };
 }
 
@@ -549,13 +560,16 @@ export async function gradeEncounter(
 			const before = card.review ? memoryOf(card.review, now) : undefined;
 			if (before) ctx.memory.set(nodeId, before);
 			else ctx.memory.delete(nodeId);
+			forget(ctx);
 			if (!livePending(ctx, r.run, r.state, tz)) {
 				await tx
 					.update(table.questRun)
 					.set({ state: { ...r.state, encounter: undefined } })
 					.where(eq(table.questRun.id, r.row.id));
 				const check = checkEncounter(ctx, r.run, nodeId);
-				return { refused: check === 'ok' ? 'stale' : check };
+				// Sealed says why and when; anything else (a Cards review made it not due, a
+				// new day) means only that this encounter is over.
+				return { refused: check === 'sealed' ? 'sealed' : 'stale' };
 			}
 			const review = !!gate(ctx, nodeId).due;
 

@@ -41,7 +41,7 @@
 				key: 'passages',
 				title: 'Passages',
 				hint: 'Decks and tags.',
-				doors: doors.filter((d) => d.facet !== 'card')
+				doors: doors.filter((d) => d.facet !== 'card' && d.status !== 'sealed')
 			},
 			{
 				key: 'open',

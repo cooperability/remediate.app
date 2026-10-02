@@ -9,6 +9,7 @@ import {
 	describeRoom,
 	DOOR_THRESHOLD,
 	entrance,
+	forget,
 	gate,
 	holdOf,
 	isKnown,
@@ -166,10 +167,12 @@ describe('prerequisites (prereq_of, AI-5)', () => {
 		const ctx = fixture({}, [{ srcId: 'n1', dstId: 'k1', kind: 'prereq_of' }]);
 		expect(gate(ctx, 'k1').status).toBe('open');
 	});
-	it('survives a prerequisite cycle', () => {
+	it('survives a longer prerequisite cycle without recursing', () => {
+		// n1 → m1 → m2 → n1: no pair lists each other, so nothing cancels; all wait.
 		const ctx = fixture({}, [
 			{ srcId: 'n1', dstId: 'm1', kind: 'prereq_of' },
-			{ srcId: 'm1', dstId: 'n1', kind: 'prereq_of' }
+			{ srcId: 'm1', dstId: 'm2', kind: 'prereq_of' },
+			{ srcId: 'm2', dstId: 'n1', kind: 'prereq_of' }
 		]);
 		expect(gate(ctx, 'n1').status).toBe('sealed');
 		expect(gate(ctx, 'm1').status).toBe('sealed');
@@ -505,5 +508,53 @@ describe('entrance', () => {
 	});
 	it('has none in an empty world', () => {
 		expect(entrance({ ...fixture(), world: buildWorld([], []) })).toBeNull();
+	});
+});
+
+describe('round two', () => {
+	it("seals a card while its tag's prerequisite is unlearned, though its hall is open", () => {
+		// u (history) builds on t (logic); with logic under half known, n1 (history) waits.
+		const ctx = fixture({}, [{ srcId: 't', dstId: 'u', kind: 'prereq_of' }]);
+		ctx.memory.delete('k2');
+		expect(gate(ctx, 'n1')).toEqual({ status: 'sealed', reason: 'prereq', needs: ['logic'] });
+		expect(checkEncounter(ctx, at('h'), 'n1')).toBe('sealed');
+		expect(suggest(ctx, at('h'))?.to).not.toBe('n1');
+	});
+	it('lets two nodes that list each other as prerequisites cancel out', () => {
+		const ctx = fixture({}, [
+			{ srcId: 'n1', dstId: 'm1', kind: 'prereq_of' },
+			{ srcId: 'm1', dstId: 'n1', kind: 'prereq_of' }
+		]);
+		expect(gate(ctx, 'n1').status).toBe('locked');
+		expect(gate(ctx, 'm1').status).toBe('locked');
+	});
+	it('names each missing prerequisite once', () => {
+		const ctx = fixture({}, [
+			{ srcId: 'm1', dstId: 'n1', kind: 'prereq_of' },
+			{ srcId: 'm1', dstId: 'n1', kind: 'prereq_of' }
+		]);
+		expect(gate(ctx, 'n1')).toMatchObject({ needs: ['m1'] });
+	});
+	it('offers a review only for a card in review, not a learning step minutes old', () => {
+		const ctx = fixture();
+		ctx.memory.set('k1', mem(2.3, 1, earlier));
+		expect(gate(ctx, 'k1')).toEqual({ status: 'open' });
+		expect(checkEncounter(ctx, at('t'), 'k1')).toBe('unreachable');
+	});
+	it('marks closed map cards with a recall on offer, and only those', () => {
+		const ctx = fixture();
+		ctx.memory.set('k1', mem(0.4, 3, earlier, 0.3));
+		ctx.memory.set('k2', mem(0.4, 3, later, 0.3));
+		const map = buildMap(ctx, at('h', ['k1', 'k2']), layoutWorld(ctx.world));
+		expect(map.nodes.find((n) => n.id === 'k1')).toMatchObject({ open: false, rematch: true });
+		expect(map.nodes.find((n) => n.id === 'k2')?.rematch).toBeUndefined();
+	});
+	it('recomputes progress after forget(), and only then', () => {
+		const ctx = fixture();
+		expect(progressOf(ctx, 't').known).toBe(2);
+		ctx.memory.set('m1', mem(5, 2, later));
+		expect(progressOf(ctx, 't').known).toBe(2);
+		forget(ctx);
+		expect(progressOf(ctx, 't').known).toBe(3);
 	});
 });

@@ -139,4 +139,34 @@ test.describe('quest', () => {
 			}
 		}
 	});
+
+	test('an encounter left for later waits to be resumed, and an expired one ends cleanly', async ({
+		page,
+		baseURL
+	}) => {
+		await signIn(page, baseURL!);
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await page.goto('/quest');
+		await page.getByRole('button', { name: /Next ·/ }).click();
+		const dialog = page.getByRole('dialog');
+		await expect(dialog.getByRole('button', { name: /Show answer/ })).toBeVisible();
+
+		// "Later" closes it; a reload does not throw it back, it offers it.
+		await dialog.getByRole('button', { name: /Later/ }).click();
+		await expect(dialog).toBeHidden();
+		await page.reload();
+		await expect(page.getByRole('dialog')).toBeHidden();
+		await page.getByRole('button', { name: /Resume ·/ }).click();
+		await expect(dialog.getByRole('button', { name: /Show answer/ })).toBeVisible();
+
+		// The server closes it meanwhile (another tab, a Cards review): rating it
+		// ends the encounter instead of inviting a retry that cannot work.
+		await sql`update quest_runs set state = '{}'::jsonb where user_id = ${USER_ID}`;
+		await page.keyboard.press('Space');
+		await page.keyboard.press('3');
+		await expect(dialog.getByText('This encounter is over.')).toBeVisible();
+		await expect(dialog.getByText(/Rate again/)).toHaveCount(0);
+		await dialog.getByRole('button', { name: 'Back to the room' }).click();
+		await expect(dialog).toBeHidden();
+	});
 });
