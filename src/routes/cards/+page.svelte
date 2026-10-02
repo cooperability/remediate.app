@@ -52,6 +52,12 @@
 		</div>
 	</section>
 
+	{#if data.deleted}
+		<p class="panel mt-4 px-4 py-3 text-sm" role="status">
+			Deleted <span class="font-medium">{data.deleted}</span>.
+		</p>
+	{/if}
+
 	<div class="mt-10 flex items-baseline justify-between">
 		<h1 class="text-2xl font-bold tracking-tight">Decks</h1>
 		<span class="text-muted font-mono text-xs">{data.decks.length} decks</span>

@@ -138,6 +138,19 @@ test.describe('study round', () => {
 		}
 	});
 
+	// Runs last among the signed-in tests: it removes the deck the others use.
+	test('deletes a deck after confirmation', async ({ page, context, baseURL }) => {
+		await context.addCookies([{ name: 'auth-session', value: token, url: baseURL! }]);
+		await page.goto('/cards');
+		await page.getByRole('link', { name: 'Details' }).first().click();
+		await page.waitForURL(/\/cards\/deck/);
+		await page.getByRole('checkbox', { name: /Delete \d+ cards/ }).check();
+		await page.getByRole('button', { name: 'Delete deck' }).click();
+		await page.waitForURL(/\/cards\?deleted=/);
+		await expect(page.getByRole('status')).toContainText('Deleted');
+		await expect(page.getByText('No decks yet')).toBeVisible();
+	});
+
 	// Also covers a file chosen before hydration: the server-rendered form must submit.
 	test.describe('without JavaScript', () => {
 		test.use({ javaScriptEnabled: false });
