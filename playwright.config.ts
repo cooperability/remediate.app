@@ -6,7 +6,7 @@ export default defineConfig({
 		port: 4173,
 		// Test files sign in through session rows they write. Each needs its own address:
 		// user.email is unique and files run in parallel.
-		env: { ALLOWED_EMAILS: 'e2e@test.invalid,e2e-error@test.invalid' }
+		env: { ALLOWED_EMAILS: 'e2e@test.invalid,e2e-error@test.invalid,e2e-harvest@test.invalid' }
 	},
 	use: {
 		baseURL: 'http://localhost:4173',
