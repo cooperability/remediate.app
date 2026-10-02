@@ -29,6 +29,13 @@
 			"when": 1790102342448,
 			"tag": "0003_rls",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1790185580248,
+			"tag": "0004_harvest_indexes",
+			"breakpoints": true
 		}
 	]
 }

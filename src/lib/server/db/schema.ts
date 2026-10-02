@@ -245,7 +245,13 @@ export const harvest = pgTable(
 		failReason: text('fail_reason'),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 	},
-	(t) => [uniqueIndex('idx_url').on(t.userId, t.urlNormalized)]
+	(t) => [
+		uniqueIndex('idx_url').on(t.userId, t.urlNormalized),
+		// The review page lists one status at a time, oldest first.
+		index('idx_harvest_status').on(t.userId, t.status, t.id),
+		// Cross-domain duplicates: the same story on apple.news and the publisher.
+		index('idx_harvest_hash').on(t.userId, t.contentHash)
+	]
 );
 
 export const questRun = pgTable('quest_runs', {

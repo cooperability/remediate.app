@@ -1,0 +1,1242 @@
+{
+	"id": "0f91c4b7-dfd0-425e-aefc-202146a9fa62",
+	"prevId": "243e957a-68a0-457f-8f18-c6d3d014d7c0",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.assessments": {
+			"name": "assessments",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"deck": {
+					"name": "deck",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"started_at": {
+					"name": "started_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"finished_at": {
+					"name": "finished_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"card_count": {
+					"name": "card_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"card_ids": {
+					"name": "card_ids",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::text[]"
+				},
+				"score": {
+					"name": "score",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"areas": {
+					"name": "areas",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"standing": {
+					"name": "standing",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"strong": {
+					"name": "strong",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::text[]"
+				},
+				"weak": {
+					"name": "weak",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::text[]"
+				}
+			},
+			"indexes": {
+				"idx_assessment_deck": {
+					"name": "idx_assessment_deck",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "deck",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "finished_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"assessments_user_id_user_id_fk": {
+					"name": "assessments_user_id_user_id_fk",
+					"tableFrom": "assessments",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.edges": {
+			"name": "edges",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "bigserial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"src_id": {
+					"name": "src_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"dst_id": {
+					"name": "dst_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"kind": {
+					"name": "kind",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"weight": {
+					"name": "weight",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"provenance": {
+					"name": "provenance",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {
+				"idx_edge_src": {
+					"name": "idx_edge_src",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "src_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "kind",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_edge_unique": {
+					"name": "idx_edge_unique",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "src_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "dst_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "kind",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"edges_user_id_user_id_fk": {
+					"name": "edges_user_id_user_id_fk",
+					"tableFrom": "edges",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"edges_src_id_nodes_id_fk": {
+					"name": "edges_src_id_nodes_id_fk",
+					"tableFrom": "edges",
+					"tableTo": "nodes",
+					"columnsFrom": ["src_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"edges_dst_id_nodes_id_fk": {
+					"name": "edges_dst_id_nodes_id_fk",
+					"tableFrom": "edges",
+					"tableTo": "nodes",
+					"columnsFrom": ["dst_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.harvests": {
+			"name": "harvests",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "bigserial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"url_normalized": {
+					"name": "url_normalized",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"content_hash": {
+					"name": "content_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'queued'"
+				},
+				"tier": {
+					"name": "tier",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"confidence": {
+					"name": "confidence",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"proposal": {
+					"name": "proposal",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"node_id": {
+					"name": "node_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"fail_reason": {
+					"name": "fail_reason",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_url": {
+					"name": "idx_url",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "url_normalized",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_harvest_status": {
+					"name": "idx_harvest_status",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_harvest_hash": {
+					"name": "idx_harvest_hash",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "content_hash",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"harvests_user_id_user_id_fk": {
+					"name": "harvests_user_id_user_id_fk",
+					"tableFrom": "harvests",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"harvests_node_id_nodes_id_fk": {
+					"name": "harvests_node_id_nodes_id_fk",
+					"tableFrom": "harvests",
+					"tableTo": "nodes",
+					"columnsFrom": ["node_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.jobs": {
+			"name": "jobs",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "bigserial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"kind": {
+					"name": "kind",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'queued'"
+				},
+				"payload": {
+					"name": "payload",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"attempts": {
+					"name": "attempts",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"claimed_at": {
+					"name": "claimed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_job_claim": {
+					"name": "idx_job_claim",
+					"columns": [
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "kind",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"jobs_user_id_user_id_fk": {
+					"name": "jobs_user_id_user_id_fk",
+					"tableFrom": "jobs",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.login_code": {
+			"name": "login_code",
+			"schema": "",
+			"columns": {
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"code_hash": {
+					"name": "code_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"attempts": {
+					"name": "attempts",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.login_throttle": {
+			"name": "login_throttle",
+			"schema": "",
+			"columns": {
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"window_start": {
+					"name": "window_start",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"sends": {
+					"name": "sends",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"failures": {
+					"name": "failures",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.nodes": {
+			"name": "nodes",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"anki_guid": {
+					"name": "anki_guid",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"kind": {
+					"name": "kind",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'card'"
+				},
+				"notetype": {
+					"name": "notetype",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'Basic'"
+				},
+				"front": {
+					"name": "front",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"back": {
+					"name": "back",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "''"
+				},
+				"deck": {
+					"name": "deck",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tags": {
+					"name": "tags",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::text[]"
+				},
+				"url": {
+					"name": "url",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"extraction_tier": {
+					"name": "extraction_tier",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"summary": {
+					"name": "summary",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"difficulty": {
+					"name": "difficulty",
+					"type": "smallint",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"embedding": {
+					"name": "embedding",
+					"type": "vector(1024)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_guid": {
+					"name": "idx_guid",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "anki_guid",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_node_deck": {
+					"name": "idx_node_deck",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "deck",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_node_embed": {
+					"name": "idx_node_embed",
+					"columns": [
+						{
+							"expression": "embedding",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last",
+							"opclass": "vector_cosine_ops"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "hnsw",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"nodes_user_id_user_id_fk": {
+					"name": "nodes_user_id_user_id_fk",
+					"tableFrom": "nodes",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.quest_runs": {
+			"name": "quest_runs",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"current_node_id": {
+					"name": "current_node_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"visited": {
+					"name": "visited",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::text[]"
+				},
+				"state": {
+					"name": "state",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"quest_runs_user_id_user_id_fk": {
+					"name": "quest_runs_user_id_user_id_fk",
+					"tableFrom": "quest_runs",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"quest_runs_current_node_id_nodes_id_fk": {
+					"name": "quest_runs_current_node_id_nodes_id_fk",
+					"tableFrom": "quest_runs",
+					"tableTo": "nodes",
+					"columnsFrom": ["current_node_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.review_log": {
+			"name": "review_log",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "bigserial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"node_id": {
+					"name": "node_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"rating": {
+					"name": "rating",
+					"type": "smallint",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"state": {
+					"name": "state",
+					"type": "smallint",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"elapsed_days": {
+					"name": "elapsed_days",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"reviewed_at": {
+					"name": "reviewed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"surface": {
+					"name": "surface",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"assessment_id": {
+					"name": "assessment_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"attempt": {
+					"name": "attempt",
+					"type": "smallint",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				}
+			},
+			"indexes": {
+				"idx_log_node": {
+					"name": "idx_log_node",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "node_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_log_attempt": {
+					"name": "idx_log_attempt",
+					"columns": [
+						{
+							"expression": "assessment_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "node_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "attempt",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"review_log_user_id_user_id_fk": {
+					"name": "review_log_user_id_user_id_fk",
+					"tableFrom": "review_log",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_log_node_id_nodes_id_fk": {
+					"name": "review_log_node_id_nodes_id_fk",
+					"tableFrom": "review_log",
+					"tableTo": "nodes",
+					"columnsFrom": ["node_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_log_assessment_id_assessments_id_fk": {
+					"name": "review_log_assessment_id_assessments_id_fk",
+					"tableFrom": "review_log",
+					"tableTo": "assessments",
+					"columnsFrom": ["assessment_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.review_state": {
+			"name": "review_state",
+			"schema": "",
+			"columns": {
+				"node_id": {
+					"name": "node_id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"stability": {
+					"name": "stability",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"difficulty": {
+					"name": "difficulty",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"due": {
+					"name": "due",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"reps": {
+					"name": "reps",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"lapses": {
+					"name": "lapses",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"state": {
+					"name": "state",
+					"type": "smallint",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"learning_steps": {
+					"name": "learning_steps",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"scheduled_days": {
+					"name": "scheduled_days",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"last_review": {
+					"name": "last_review",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"idx_review_due": {
+					"name": "idx_review_due",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "due",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"where": "state != 0",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"review_state_node_id_nodes_id_fk": {
+					"name": "review_state_node_id_nodes_id_fk",
+					"tableFrom": "review_state",
+					"tableTo": "nodes",
+					"columnsFrom": ["node_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_state_user_id_user_id_fk": {
+					"name": "review_state_user_id_user_id_fk",
+					"tableFrom": "review_state",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.session": {
+			"name": "session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.user": {
+			"name": "user",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"user_email_unique": {
+					"name": "user_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}
