@@ -602,4 +602,38 @@ describe.skipIf(!hasDb)('Quest against the database', () => {
 			expect(g.cleared).toEqual(['logic']);
 		});
 	});
+	describe('round two', () => {
+		it('calls a review encounter a Cards review closed stale, not unreachable', async () => {
+			await db.insert(table.reviewState).values({
+				nodeId: card(0),
+				userId,
+				stability: 5,
+				difficulty: 5,
+				due: at(-10),
+				reps: 3,
+				state: 2,
+				lastReview: at(-60 * 24 * 5)
+			});
+			await quest.questView(userId, at(0));
+			const e = await quest.openEncounter(userId, card(0), at(1));
+			if (!e.ok) throw new Error(e.reason);
+			// Cards reviews it: due again in days.
+			await db
+				.update(table.reviewState)
+				.set({ due: at(60 * 24 * 9) })
+				.where(eq(table.reviewState.nodeId, card(0)));
+			expect(
+				await quest.gradeEncounter(userId, e.encounter.encounterId, card(0), 3, at(2))
+			).toEqual({ refused: 'stale' });
+		});
+
+		it('does not starve the pool: more concurrent calls than connections, outside asTenant', async () => {
+			// Each locked call used to read through the pool while holding a connection
+			// that waits on the lock; at the pool's size (10) they hung for good.
+			const views = await Promise.all(
+				Array.from({ length: 12 }, () => quest.questView(userId, at(0)))
+			);
+			expect(views.every((v) => v?.room)).toBe(true);
+		}, 20_000);
+	});
 });

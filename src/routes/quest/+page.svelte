@@ -16,7 +16,9 @@
 	// and each call returns the state to draw next. Seeded from the load, then
 	// replaced by each answer. Writable deriveds, so a fresh load reseeds them.
 	let view = $derived<QuestView | null>(data.view);
-	let encounter = $derived<EncounterCard | null>(data.view?.encounter ?? null);
+	// The encounter on screen. One left open (a reload, "Later") is not thrown back
+	// at the player: view.encounter offers it as Resume instead.
+	let encounter = $state<EncounterCard | null>(null);
 	let busy = $state(false);
 	let notice = $state<{ text: string; tone: 'info' | 'error'; login?: boolean } | null>(null);
 	let now = $state(new Date());
@@ -43,7 +45,9 @@
 				.map((d) => new Date(d.retryAt!).getTime())
 		);
 		if (!Number.isFinite(soonest)) return;
-		const wait = Math.max(1000, soonest - Date.now() + 1000);
+		// At least 15 s: with the browser's clock ahead of the server's, the door can
+		// still read sealed after its time, and each refresh takes the run's lock.
+		const wait = Math.max(15_000, soonest - Date.now() + 1000);
 		if (wait > 3_600_000) return;
 		const t = setTimeout(() => refresh(), wait);
 		return () => clearTimeout(t);
@@ -67,6 +71,7 @@
 
 	class Refused extends Error {}
 	class SignedOut extends Error {}
+	class NotFound extends Error {}
 
 	async function call<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
 		let res: Response;
@@ -82,6 +87,7 @@
 		if (res.status === 401) throw new SignedOut('Your session ended.');
 		const json = await res.json().catch(() => null);
 		if (res.status === 409) throw new Refused(json?.message ?? 'Not from here.');
+		if (res.status === 404) throw new NotFound(json?.message ?? 'Not found.');
 		if (!res.ok)
 			throw new Error(json?.message ?? `Something went wrong (${res.status}). Try again.`);
 		if (json === null) throw new Error('The server sent something unexpected. Try again.');
@@ -92,15 +98,18 @@
 		notice = { text, tone, login };
 	}
 
-	async function run(task: () => Promise<void>) {
-		if (busy) return;
+	/** Run one request at a time, reporting failure as a notice. True if it went through. */
+	async function run(task: () => Promise<void>): Promise<boolean> {
+		if (busy) return false;
 		busy = true;
 		notice = null;
 		try {
 			await task();
+			return true;
 		} catch (e) {
 			const text = e instanceof Error ? e.message : String(e);
 			say(text, e instanceof Refused ? 'info' : 'error', e instanceof SignedOut);
+			return false;
 		} finally {
 			busy = false;
 		}
@@ -127,9 +136,12 @@
 	 * outright while another request is in flight. A failure here is not the
 	 * player's to see; the next action reports it.
 	 */
+	let retry: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => () => clearTimeout(retry));
+
 	async function refresh() {
 		if (busy || encounter) {
-			setTimeout(refresh, 2000);
+			retry = setTimeout(refresh, 2000);
 			return;
 		}
 		try {
@@ -164,6 +176,12 @@
 			encounter = r.encounter;
 		});
 
+	function resume() {
+		if (!view?.encounter || busy) return;
+		remember();
+		encounter = view.encounter;
+	}
+
 	function ondoor(d: Door) {
 		if (d.status === 'locked' || d.due) challenge(d.to);
 		else if (d.status === 'open') go(d.to);
@@ -174,7 +192,7 @@
 		const door = view?.room.doors.find((d) => d.to === n.id);
 		if (door) return ondoor(door);
 		if (n.open) go(n.id);
-		else challenge(n.id);
+		else if (n.rematch) challenge(n.id);
 	}
 
 	function describe(n: MapNode): { text: string; action: string | null } {
@@ -188,24 +206,41 @@
 		if (door?.due) return { text: 'Known, due for review', action: 'Review' };
 		if (door?.status === 'sealed') return { text: 'Sealed for now', action: null };
 		if (n.open) return { text: `Known · recall now ${percent(n.strength)}`, action: 'Go' };
-		return { text: 'Lapsed: recall it to reopen', action: 'Rematch' };
+		if (n.rematch) return { text: 'Lapsed: recall it to reopen', action: 'Rematch' };
+		return { text: 'Lapsed, and not due yet: it reopens for a rematch later', action: null };
 	}
 
 	async function grade(rating: number): Promise<Outcome> {
 		const e = encounter!;
-		return call<Outcome>('POST', '/api/review/grade', {
-			encounterId: e.encounterId,
-			nodeId: e.nodeId,
-			rating
-		});
+		try {
+			return await call<Outcome>('POST', '/api/review/grade', {
+				encounterId: e.encounterId,
+				nodeId: e.nodeId,
+				rating
+			});
+		} catch (err) {
+			// The server has closed this encounter (a Cards review got there first, a new
+			// day, another tab). Retrying cannot work: say so, and end it.
+			if (err instanceof Refused || err instanceof NotFound) {
+				const over = new Error(
+					err instanceof Refused
+						? err.message
+						: 'It was closed elsewhere, in another tab or by a reload.'
+				);
+				over.name = 'Expired';
+				throw over;
+			}
+			throw err;
+		}
 	}
 
 	async function closeEncounter(outcome: Outcome | null) {
 		const nodeId = encounter?.nodeId;
 		encounter = null;
-		await run(async () => arrive(await call<QuestView>('GET', '/api/quest'), false));
+		const ok = await run(async () => arrive(await call<QuestView>('GET', '/api/quest'), false));
 		await tick();
-		if (outcome?.unlocked && nodeId) {
+		// A failed refresh keeps its error toast rather than a cheerful one over it.
+		if (ok && outcome?.unlocked && nodeId) {
 			flash = nodeId;
 			const cleared = outcome.cleared?.length ? ` Cleared: ${outcome.cleared.join(', ')}.` : '';
 			say((outcome.review ? 'Held.' : 'You are in.') + cleared);
@@ -220,7 +255,10 @@
 		if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
 		// Caps Lock or Shift must not turn the shortcuts off.
 		const key = e.key.toLowerCase();
-		if (key === 'n' && view?.next) {
+		if (key === 'n' && view?.encounter) {
+			e.preventDefault();
+			resume();
+		} else if (key === 'n' && view?.next) {
 			e.preventDefault();
 			next();
 		} else if (key === 'f') mapRef?.focus();
@@ -251,7 +289,7 @@
 	<main class="mx-auto max-w-xl px-4 py-16 text-center">
 		<p class="eyebrow">Quest</p>
 		<h1 class="mt-2 text-2xl font-bold tracking-tight">Your map is empty</h1>
-		<p class="mt-3 text-muted">
+		<p class="text-muted mt-3">
 			Quest draws a world from your cards: every deck is a hall, every tag a passage, every card a
 			room you open by recalling it. Import a deck to begin.
 		</p>
@@ -261,7 +299,7 @@
 	<main class="mx-auto flex max-w-6xl flex-col lg:h-[calc(100dvh-3.5rem)] lg:flex-row">
 		<section
 			aria-label="Map"
-			class="relative h-[46dvh] min-h-64 border-b border-line lg:h-auto lg:flex-1 lg:border-r lg:border-b-0"
+			class="border-line relative h-[46dvh] min-h-64 border-b lg:h-auto lg:flex-1 lg:border-r lg:border-b-0"
 		>
 			<QuestMap
 				bind:this={mapRef}
@@ -319,7 +357,7 @@
 				>
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-semibold">{picked.title}</p>
-						<p class="text-xs text-muted">{d.text}</p>
+						<p class="text-muted text-xs">{d.text}</p>
 					</div>
 					{#if d.action}
 						<button
@@ -359,8 +397,21 @@
 				<TravelList nodes={view.map.nodes} current={view.map.current} {busy} ongo={act} />
 			</div>
 
-			<div class="sticky bottom-0 border-t border-line bg-bg/90 px-4 py-3 backdrop-blur">
-				{#if view.next}
+			<div class="border-line bg-bg/90 sticky bottom-0 border-t px-4 py-3 backdrop-blur">
+				{#if view.encounter}
+					<button
+						class="btn btn-primary min-h-12 w-full text-base"
+						disabled={busy}
+						onclick={resume}
+					>
+						<span class="min-w-0 truncate"
+							>Resume · {view.encounter.review ? 'a review' : 'a door'}</span
+						>
+						<span class="kbd hidden border-transparent bg-black/15 text-current sm:inline-flex"
+							>N</span
+						>
+					</button>
+				{:else if view.next}
 					<button class="btn btn-primary min-h-12 w-full text-base" disabled={busy} onclick={next}>
 						<span class="shrink-0">
 							Next · {NEXT_LABEL[view.next.kind]}
@@ -374,7 +425,7 @@
 						>
 					</button>
 				{:else}
-					<p class="py-2 text-center text-sm text-muted">
+					<p class="text-muted py-2 text-center text-sm">
 						Nothing to face right now. Everything you can reach is open or sealed.
 					</p>
 				{/if}

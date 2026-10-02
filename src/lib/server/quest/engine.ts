@@ -165,12 +165,28 @@ export function isKnown(ctx: Ctx, id: string): boolean {
 	return isCard(ctx, id) && knows(ctx.memory.get(id));
 }
 
+// progressOf per concept, per context. A hall holds thousands of cards, and
+// suggest() asks about every concept of every fresh card: without this it is
+// quadratic at corpus scale. Call forget() after changing ctx.memory.
+const progressMemo = new WeakMap<Ctx, Map<string, { known: number; total: number }>>();
+
+/** Drop what was worked out from ctx.memory, after changing it. */
+export function forget(ctx: Ctx) {
+	progressMemo.delete(ctx);
+}
+
 /** How many of a concept's cards, including those under narrower concepts, are known. */
 export function progressOf(ctx: Ctx, id: string) {
+	let memo = progressMemo.get(ctx);
+	if (!memo) progressMemo.set(ctx, (memo = new Map()));
+	const hit = memo.get(id);
+	if (hit) return hit;
 	const cards = ctx.world.members.get(id) ?? [];
 	let known = 0;
 	for (const c of cards) if (isKnown(ctx, c)) known++;
-	return { known, total: cards.length };
+	const p = { known, total: cards.length };
+	memo.set(id, p);
+	return p;
 }
 
 /**
@@ -208,10 +224,27 @@ function learned(ctx: Ctx, id: string): boolean {
 	return p.total === 0 || p.known / p.total >= PREREQ_SHARE;
 }
 
+/**
+ * What `id` builds on that is not learned yet. A card also inherits what its
+ * concepts build on: a sealed tag would be cosmetic if its cards were still
+ * reachable through their always-open hall. Two nodes that each list the other
+ * as a prerequisite (common in generated edges) cancel out rather than sealing
+ * each other forever.
+ */
 function unmetPrereqs(ctx: Ctx, id: string): string[] {
-	return (ctx.world.prereqs.get(id) ?? [])
-		.filter((p) => !learned(ctx, p))
-		.map((p) => ctx.world.nodes.get(p)!.title);
+	const sources = new Set(ctx.world.prereqs.get(id) ?? []);
+	if (isCard(ctx, id)) {
+		for (const l of ctx.world.links.get(id) ?? []) {
+			if (isCard(ctx, l.to)) continue;
+			for (const p of ctx.world.prereqs.get(l.to) ?? []) if (p !== id) sources.add(p);
+		}
+	}
+	const out = new Set<string>();
+	for (const p of sources) {
+		if (ctx.world.prereqs.get(p)?.includes(id)) continue;
+		if (!learned(ctx, p)) out.add(ctx.world.nodes.get(p)!.title);
+	}
+	return [...out].sort();
 }
 
 /** Whether the door into `id` opens, and if not, whether a recall attempt is on offer. */
@@ -220,9 +253,11 @@ export function gate(ctx: Ctx, id: string): Gate {
 	if (!node) return { status: 'open' };
 	const m = ctx.memory.get(id);
 	const dueNow = !!m && m.state !== 0 && m.due.getTime() <= ctx.now.getTime();
-	// A card you know stays open, prerequisites or not: you already know it.
+	// A card you know stays open, prerequisites or not: you already know it. Only a
+	// card in review (state 2) is offered as a review: a learning step due minutes
+	// after a first meeting is not "fading", and Cards walks it through its steps.
 	if (node.facet === 'card' && isKnown(ctx, id))
-		return dueNow ? { status: 'open', due: true } : { status: 'open' };
+		return dueNow && m!.state === 2 ? { status: 'open', due: true } : { status: 'open' };
 	const needs = unmetPrereqs(ctx, id);
 	if (needs.length) return { status: 'sealed', reason: 'prereq', needs };
 	if (node.facet !== 'card') return { status: 'open' };
@@ -487,6 +522,7 @@ export function buildMap(ctx: Ctx, run: Run, layout: Layout): MapView {
 		const ghost = ghosts.has(id);
 		if (!shown.has(id) && !ghost) continue;
 		const p = layout.get(id) ?? { x: 0, y: 0 };
+		const g = gate(ctx, id);
 		let strength: number | null;
 		if (n.facet === 'card') strength = ctx.memory.get(id)?.strength ?? null;
 		else {
@@ -500,7 +536,9 @@ export function buildMap(ctx: Ctx, run: Run, layout: Layout): MapView {
 			title: n.title,
 			x: p.x,
 			y: p.y,
-			open: gate(ctx, id).status === 'open',
+			open: g.status === 'open',
+			// Off-room actions need to know whether a recall is on offer at all.
+			...(n.facet === 'card' && g.status === 'locked' ? { rematch: true } : {}),
 			visited: run.visited.has(id) || id === run.current,
 			strength,
 			...(n.facet === 'card' ? {} : { weight: n.weight }),

@@ -24,6 +24,8 @@
 	let busy = $state(false);
 	let outcome = $state<Outcome | null>(null);
 	let failed = $state<string | null>(null);
+	/** The server closed this encounter under us: retrying cannot work. */
+	let expired = $state<string | null>(null);
 	let dialog: HTMLDialogElement | undefined = $state();
 	let body: HTMLDivElement | undefined = $state();
 	let next: HTMLButtonElement | undefined = $state();
@@ -39,7 +41,7 @@
 	});
 
 	$effect(() => {
-		if (outcome) next?.focus();
+		if (outcome || expired) next?.focus();
 	});
 
 	async function rate(r: number) {
@@ -49,14 +51,15 @@
 		try {
 			outcome = await onrate(r);
 		} catch (e) {
-			failed = String(e instanceof Error ? e.message : e);
+			if (e instanceof Error && e.name === 'Expired') expired = e.message;
+			else failed = String(e instanceof Error ? e.message : e);
 		} finally {
 			busy = false;
 		}
 	}
 
 	function onkeydown(e: KeyboardEvent) {
-		if (outcome) return;
+		if (outcome || expired) return;
 		const k = studyKey(e);
 		if (k === 'flip') {
 			e.preventDefault();
@@ -66,6 +69,8 @@
 
 	// A correct recall can still leave the door shut: see Outcome.hold.
 	const recalled = $derived(!!outcome && outcome.rating >= 2);
+	// Whether that recall moved the lock at all: a relearning Hard can leave it where it was.
+	const gave = $derived(!outcome?.hold || outcome.hold.after > outcome.hold.before);
 
 	const heading = $derived(
 		encounter.review ? 'A review' : encounter.fresh ? 'A new door' : 'A locked door'
@@ -85,7 +90,8 @@
 	aria-labelledby="encounter-title"
 	oncancel={(e) => {
 		e.preventDefault();
-		onclose(outcome);
+		// Mid-grade, Esc would drop the outcome the server is about to send.
+		if (!busy) onclose(outcome);
 	}}
 	{onkeydown}
 >
@@ -95,18 +101,39 @@
 		class="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pt-4 pb-6 focus:outline-none"
 	>
 		<header class="flex items-center gap-3">
-			<button class="btn btn-ghost -ml-2 min-h-11 px-3 text-muted" onclick={() => onclose(outcome)}>
+			<button
+				class="btn btn-ghost text-muted -ml-2 min-h-11 px-3"
+				disabled={busy}
+				onclick={() => onclose(outcome)}
+			>
 				<span aria-hidden="true">←</span>
-				{outcome ? 'Back' : 'Later'}
+				{outcome || expired ? 'Back' : 'Later'}
 			</button>
 			<p id="encounter-title" class="flex-1 text-center text-sm font-medium">{heading}</p>
 			<span class="kbd hidden sm:inline-flex">Esc</span>
 		</header>
 
-		<p class="mt-4 text-center text-sm text-muted">{lead}</p>
+		<p class="text-muted mt-4 text-center text-sm">{lead}</p>
 
 		<div class="mt-5 flex flex-1 flex-col gap-6">
-			{#if outcome}
+			{#if expired}
+				<div
+					class="panel flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center"
+					role="status"
+				>
+					<p class="text-2xl font-bold tracking-tight">This encounter is over.</p>
+					<p class="text-muted max-w-sm text-sm">
+						{expired} Nothing was recorded here: the door is as the room shows it now.
+					</p>
+					<button
+						class="btn mt-2 min-h-11 px-6 text-base"
+						bind:this={next}
+						onclick={() => onclose(null)}
+					>
+						Back to the room
+					</button>
+				</div>
+			{:else if outcome}
 				<div
 					class="panel flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center"
 					in:scale={{ start: still ? 1 : 0.96, duration: still ? 0 : 220 }}
@@ -128,7 +155,7 @@
 									? 'The door opens.'
 									: 'The door opens again.'}
 						</p>
-						<p class="max-w-sm text-sm text-muted">
+						<p class="text-muted max-w-sm text-sm">
 							{outcome.review
 								? 'Recalled on time: FSRS pushes the next review further out.'
 								: encounter.fresh
@@ -161,7 +188,9 @@
 							{outcome.review
 								? 'It slipped. The door closes.'
 								: recalled
-									? 'Recalled. The lock gives.'
+									? gave
+										? 'Recalled. The lock gives.'
+										: 'Recalled. The lock holds, for now.'
 									: 'It stays shut, for now.'}
 						</p>
 						{#if outcome.hold && !outcome.review}
@@ -182,12 +211,12 @@
 										style="--from: {Math.min(h.before, h.after) * 100}%; width: {h.after * 100}%"
 									></div>
 								</div>
-								<p class="mt-1.5 font-mono text-xs text-muted tabular-nums">
+								<p class="text-muted mt-1.5 font-mono text-xs tabular-nums">
 									Lock {Math.round(h.after * 100)}% open
 								</p>
 							</div>
 						{/if}
-						<p class="max-w-sm text-sm text-muted">
+						<p class="text-muted max-w-sm text-sm">
 							{#if recalled}
 								The door opens once FSRS trusts this memory to hold for a day, and an earlier miss
 								set it back. {outcome.retryAt
@@ -212,13 +241,13 @@
 				<div in:fly={{ y: still ? 0 : 12, duration: still ? 0 : 200 }}>
 					<Flashcard card={encounter} {flipped} />
 				</div>
-				<div class="sticky bottom-0 -mx-4 mt-auto bg-bg/85 px-4 py-3 backdrop-blur">
+				<div class="bg-bg/85 sticky bottom-0 -mx-4 mt-auto px-4 py-3 backdrop-blur">
 					{#if failed}
 						<p
-							class="mb-2 rounded-xl border border-again/40 bg-again/10 px-3 py-2 text-sm"
+							class="border-again/40 bg-again/10 mb-2 rounded-xl border px-3 py-2 text-sm"
 							role="alert"
 						>
-							<span class="font-medium text-again">Could not save.</span>
+							<span class="text-again font-medium">Could not save.</span>
 							{failed} Rate again to retry.
 						</p>
 					{/if}

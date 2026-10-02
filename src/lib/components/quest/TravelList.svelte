@@ -55,18 +55,20 @@
 			{#each hits.slice(0, SHOWN) as n (n.id)}
 				<li>
 					<button
-						class="flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm hover:bg-surface-2 disabled:opacity-50"
-						disabled={busy}
+						class="hover:bg-surface-2 flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-sm disabled:opacity-50"
+						disabled={busy || (n.facet === 'card' && !n.open && !n.rematch)}
 						onclick={() => ongo(n)}
 					>
 						<span class="min-w-0 flex-1 truncate">{n.title}</span>
-						<span class="shrink-0 text-xs text-muted">
+						<span class="text-muted shrink-0 text-xs">
 							{n.facet === 'deck'
 								? 'Hall'
 								: n.facet === 'card'
 									? n.open
 										? 'Known'
-										: 'Rematch'
+										: n.rematch
+											? 'Rematch'
+											: 'Sealed'
 									: 'Tag'}
 						</span>
 					</button>
@@ -74,9 +76,9 @@
 			{/each}
 		</ul>
 		{#if hits.length > SHOWN}
-			<p class="mt-2 text-xs text-muted">{hits.length - SHOWN} more: type to narrow.</p>
+			<p class="text-muted mt-2 text-xs">{hits.length - SHOWN} more: type to narrow.</p>
 		{:else if !hits.length}
-			<p class="mt-2 text-sm text-muted">Nowhere by that name on your map yet.</p>
+			<p class="text-muted mt-2 text-sm">Nowhere by that name on your map yet.</p>
 		{/if}
 	</div>
 </details>

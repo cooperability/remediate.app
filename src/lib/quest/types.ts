@@ -69,6 +69,8 @@ export interface MapNode {
 	y: number;
 	/** Passable now. False only for a visited card that has since lapsed. */
 	open: boolean;
+	/** A closed card with a recall on offer now (not cooling, not sealed). */
+	rematch?: boolean;
 	visited: boolean;
 	/** Cards: recall probability now. Concepts: share of their cards known. */
 	strength: number | null;
