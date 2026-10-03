@@ -89,7 +89,7 @@
 			{@const p = room.progress}
 			<div class="mt-3 flex items-center gap-3">
 				<div
-					class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2"
+					class="bg-surface-2 h-1.5 flex-1 overflow-hidden rounded-full"
 					role="progressbar"
 					aria-label="Cards known here"
 					aria-valuemin={0}
@@ -97,15 +97,15 @@
 					aria-valuenow={p.known}
 				>
 					<div
-						class="h-full rounded-full bg-good transition-[width] duration-500"
+						class="bg-good h-full rounded-full transition-[width] duration-500"
 						style="width: {p.total ? (p.known / p.total) * 100 : 0}%"
 					></div>
 				</div>
-				<span class="font-mono text-xs text-muted tabular-nums">{p.known} / {p.total} known</span>
+				<span class="text-muted font-mono text-xs tabular-nums">{p.known} / {p.total} known</span>
 			</div>
 		{:else if room.facet === 'card'}
-			<p class="mt-2 text-sm text-muted">
-				Recall now <span class="font-mono text-fg tabular-nums">{percent(room.strength)}</span>
+			<p class="text-muted mt-2 text-sm">
+				Recall now <span class="text-fg font-mono tabular-nums">{percent(room.strength)}</span>
 			</p>
 		{/if}
 	</header>
@@ -122,12 +122,12 @@
 			</button>
 			{#if showCard}
 				<!-- Card HTML is DOMPurify-sanitized at import (ingest/sanitize.ts) before it is stored. -->
-				<div class="card-html prose prose-sm max-h-48 max-w-none overflow-y-auto dark:prose-invert">
+				<div class="card-html prose prose-sm dark:prose-invert max-h-48 max-w-none overflow-y-auto">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html room.front}
 				</div>
 				<div
-					class="card-html prose prose-sm mt-3 max-h-64 max-w-none overflow-y-auto border-t border-line pt-3 dark:prose-invert"
+					class="card-html prose prose-sm border-line dark:prose-invert mt-3 max-h-64 max-w-none overflow-y-auto border-t pt-3"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html room.back}
@@ -158,7 +158,7 @@
 		<div>
 			<div class="flex items-baseline justify-between gap-3">
 				<h2 class="eyebrow">{g.title} <span class="tabular-nums">· {g.doors.length}</span></h2>
-				<span class="hidden text-xs text-muted sm:inline">{g.hint}</span>
+				<span class="text-muted hidden text-xs sm:inline">{g.hint}</span>
 			</div>
 			<ul class="mt-2 flex flex-col gap-1.5">
 				{#each open ? g.doors : g.doors.slice(0, COLLAPSED) as d (d.to)}
@@ -192,12 +192,12 @@
 							</span>
 							<span class="min-w-0 flex-1">
 								<span class="block truncate">{d.title}</span>
-								<span class="block truncate text-xs text-muted">{note(d)}</span>
+								<span class="text-muted block truncate text-xs">{note(d)}</span>
 							</span>
 							{#if d.status === 'locked'}
-								<span class="chip shrink-0 border-accent/40 bg-accent-soft text-fg">Recall</span>
+								<span class="chip border-accent/40 bg-accent-soft text-fg shrink-0">Recall</span>
 							{:else if d.due}
-								<span class="chip shrink-0 border-hard/40 bg-hard/10 text-fg">Review</span>
+								<span class="chip border-hard/40 bg-hard/10 text-fg shrink-0">Review</span>
 							{/if}
 						</button>
 					</li>
@@ -205,7 +205,7 @@
 			</ul>
 			{#if !open}
 				<button
-					class="btn btn-ghost mt-1 min-h-11 w-full text-muted"
+					class="btn btn-ghost text-muted mt-1 min-h-11 w-full"
 					onclick={() => (expanded = { ...expanded, [g.key]: true })}
 				>
 					Show all {g.doors.length}
@@ -213,7 +213,7 @@
 			{/if}
 		</div>
 	{:else}
-		<p class="text-sm text-muted">
+		<p class="text-muted text-sm">
 			{filter ? 'No door matches that filter.' : 'No doors lead out of here yet.'}
 		</p>
 	{/each}
