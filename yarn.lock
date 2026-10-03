@@ -1361,10 +1361,10 @@ dompurify@^3.4.12:
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
-drizzle-kit@^0.31.8:
-  version "0.31.10"
-  resolved "https://registry.yarnpkg.com/drizzle-kit/-/drizzle-kit-0.31.10.tgz#556b4ba9ecfe089423dc5338634efa9ecd9afc1a"
-  integrity sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==
+drizzle-kit@^0.31.11:
+  version "0.31.11"
+  resolved "https://registry.yarnpkg.com/drizzle-kit/-/drizzle-kit-0.31.11.tgz#6188c577edd1495c23910c4903a23f898add9599"
+  integrity sha512-YCYqxTLIB2OCqf6w9/Vef13baBVbwQIPcbT4Y56AfO6B9ajZhDhD8Jkveg/hJvT/iuMloKD/IYYkyMMNhr7Kqg==
   dependencies:
     "@drizzle-team/brocli" "^0.10.2"
     "@esbuild-kit/esm-loader" "^2.5.5"
