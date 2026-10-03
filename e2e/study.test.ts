@@ -13,7 +13,15 @@ if (!process.env.DATABASE_URL && existsSync('.env')) process.loadEnvFile('.env')
 const url = process.env.DATABASE_URL;
 const E2E_EMAIL = 'e2e@test.invalid';
 const USER_ID = 'e2e-user';
-const TABLES = ['review_log', 'review_state', 'assessments', 'nodes', 'session'];
+const TABLES = [
+	'review_log',
+	'review_state',
+	'quest_runs',
+	'edges',
+	'assessments',
+	'nodes',
+	'session'
+];
 
 test.describe('study round', () => {
 	test.skip(!url, 'needs DATABASE_URL');

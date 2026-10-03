@@ -16,6 +16,10 @@ export default defineConfig({
 	},
 	test: {
 		environment: 'node',
-		include: ['src/lib/server/**/*.test.ts', 'src/lib/cards/**/*.test.ts']
+		include: [
+			'src/lib/server/**/*.test.ts',
+			'src/lib/cards/**/*.test.ts',
+			'src/lib/quest/**/*.test.ts'
+		]
 	}
 });
