@@ -48,13 +48,13 @@
 		"tailwindcss": "^4.0.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.70.1",
-		"vite": "8.3.0",
-		"vitest": "5.0.1"
+		"vite": "8.3.2",
+		"vitest": "5.0.3"
 	},
 	"dependencies": {
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
-		"csv-parse": "7.0.2",
+		"csv-parse": "7.0.3",
 		"drizzle-orm": "^0.45.3",
 		"isomorphic-dompurify": "4.4.0",
 		"postgres": "^3.4.5",
