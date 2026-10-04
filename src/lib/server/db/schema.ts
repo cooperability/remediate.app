@@ -99,12 +99,13 @@ export const edge = pgTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => user.id),
+		// Edges are derived from their nodes, so they go with them.
 		srcId: text('src_id')
 			.notNull()
-			.references(() => node.id),
+			.references(() => node.id, { onDelete: 'cascade' }),
 		dstId: text('dst_id')
 			.notNull()
-			.references(() => node.id),
+			.references(() => node.id, { onDelete: 'cascade' }),
 		kind: text('kind').notNull(), // deck | tag | similar_to | prereq_of | cites
 		weight: real('weight').notNull().default(1),
 		provenance: text('provenance').notNull() // import | ai | manual
@@ -112,6 +113,8 @@ export const edge = pgTable(
 	(t) => [
 		// Quest traversal.
 		index('idx_edge_src').on(t.userId, t.srcId, t.kind),
+		// Quest walks edges both ways: a card's door to its tag is the tag's door back.
+		index('idx_edge_dst').on(t.userId, t.dstId),
 		uniqueIndex('idx_edge_unique').on(t.userId, t.srcId, t.dstId, t.kind)
 	]
 );
@@ -177,11 +180,17 @@ export const reviewLog = pgTable(
 		assessmentId: text('assessment_id').references(() => assessment.id),
 		// 0 for a card's first try in a round, n for its nth relearning repeat. Unique
 		// per round so a retried request cannot log the same attempt twice.
-		attempt: smallint('attempt').notNull().default(0)
+		attempt: smallint('attempt').notNull().default(0),
+		// The Quest encounter this review answered. Unique, for the same reason as
+		// attempt: a retried grade request is reported, not logged twice.
+		encounterId: text('encounter_id')
 	},
 	(t) => [
 		index('idx_log_node').on(t.userId, t.nodeId),
-		uniqueIndex('idx_log_attempt').on(t.assessmentId, t.nodeId, t.attempt)
+		uniqueIndex('idx_log_attempt').on(t.assessmentId, t.nodeId, t.attempt),
+		uniqueIndex('idx_log_encounter')
+			.on(t.encounterId)
+			.where(sql`encounter_id is not null`)
 	]
 );
 
@@ -254,18 +263,28 @@ export const harvest = pgTable(
 	]
 );
 
-export const questRun = pgTable('quest_runs', {
-	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id),
-	currentNodeId: text('current_node_id').references(() => node.id),
-	visited: text('visited')
-		.array()
-		.notNull()
-		.default(sql`'{}'::text[]`),
-	state: jsonb('state')
-});
+/**
+ * Where a player stands in their world. One per user: the world is the user's
+ * whole graph, so there is nothing to start a second run over. `state` holds the
+ * open encounter, if any (quest/repo.ts RunState).
+ */
+export const questRun = pgTable(
+	'quest_runs',
+	{
+		id: text('id').primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id),
+		// A deleted node puts the player back at the entrance (quest/repo.ts lockRun).
+		currentNodeId: text('current_node_id').references(() => node.id, { onDelete: 'set null' }),
+		visited: text('visited')
+			.array()
+			.notNull()
+			.default(sql`'{}'::text[]`),
+		state: jsonb('state')
+	},
+	(t) => [uniqueIndex('idx_quest_run_user').on(t.userId)]
+);
 
 /** Queue on Postgres. Claimed with FOR UPDATE SKIP LOCKED by the cron worker. */
 export const job = pgTable(

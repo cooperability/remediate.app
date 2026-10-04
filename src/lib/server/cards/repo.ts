@@ -3,8 +3,11 @@ import type { Grade } from 'ts-fsrs';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { parseAnkiExport } from '$lib/server/ingest/anki-tsv';
+import { questLock, syncImportGraphIn } from '$lib/server/quest/repo';
+import { introducedToday } from './budget';
 import { classify, gradeRound, mergeStanding, standingOf } from './grading';
-import { grade, previewIntervals } from './scheduler';
+import { writeReview } from './review';
+import { previewIntervals } from './scheduler';
 import { NEW_PER_DAY, ROUND_SIZE, selectRound } from './select';
 
 export async function importDeck(userId: string, raw: string) {
@@ -26,6 +29,10 @@ export async function importDeck(userId: string, raw: string) {
 	// back the whole import, not a prefix of it, and leaves the request's transaction
 	// usable, so the page load after the action's error still renders.
 	await db.transaction(async (tx) => {
+		// Quest's lock first, as every Quest writer takes it: the upserts lock card
+		// rows, and the graph sync can reach the run row, so any other order can
+		// deadlock against a Quest grade (which holds the run, then the card).
+		await tx.execute(questLock(userId));
 		for (let i = 0; i < notes.length; i += 500) {
 			await tx
 				.insert(table.node)
@@ -38,9 +45,13 @@ export async function importDeck(userId: string, raw: string) {
 						deck: excluded('deck'),
 						tags: excluded('tags'),
 						notetype: excluded('notetype')
-					}
+					},
+					// Never let a card overwrite a concept or a document with the same id.
+					setWhere: eq(table.node.kind, 'card')
 				});
 		}
+		// Keep the Quest map in step with the cards' decks and tags.
+		await syncImportGraphIn(tx, userId);
 	});
 	return { imported: notes.length, warnings };
 }
@@ -269,23 +280,6 @@ export async function startRound(userId: string, deck: string, now = new Date(),
 	};
 }
 
-/** Cards in the deck whose first ever review fell on today, in time zone `tz`. */
-async function introducedToday(userId: string, deck: string, now: Date, tz: string) {
-	const [{ n }] = await db
-		.select({ n: sql<number>`count(distinct ${table.reviewLog.nodeId})::int` })
-		.from(table.reviewLog)
-		.innerJoin(table.node, eq(table.node.id, table.reviewLog.nodeId))
-		.where(
-			and(
-				eq(table.reviewLog.userId, userId),
-				eq(table.reviewLog.state, 0),
-				sql`(${table.reviewLog.reviewedAt} at time zone ${tz})::date = (${now.toISOString()}::timestamptz at time zone ${tz})::date`,
-				eq(table.node.deck, deck)
-			)
-		);
-	return n;
-}
-
 /** Grade an abandoned round on what it has, or delete it if nothing was graded. */
 async function closeStaleRound(userId: string, assessmentId: string) {
 	const [last] = await db
@@ -349,22 +343,16 @@ export async function recordGrade(
 		// Attempts come in order, and a repeat follows only a miss.
 		if (attempt > prior.length || (attempt > 0 && prior[attempt - 1].rating !== 1)) return null;
 
-		const { next, elapsedDays, priorState } = grade(row.review, rating, now);
-		await tx.insert(table.reviewLog).values({
+		await writeReview(tx, {
 			userId,
 			nodeId,
+			review: row.review,
 			rating,
-			state: priorState,
-			elapsedDays,
-			reviewedAt: now,
+			now,
 			surface: 'cards',
 			assessmentId,
 			attempt
 		});
-		await tx
-			.insert(table.reviewState)
-			.values({ nodeId, userId, ...next })
-			.onConflictDoUpdate({ target: table.reviewState.nodeId, set: next });
 		return rating;
 	});
 }
