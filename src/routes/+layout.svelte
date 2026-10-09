@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import { TZ_COOKIE, toTimeZone } from '$lib/timezone';
 	import { resolve } from '$app/paths';
+	import { splashScreens } from '$lib/pwa/splash';
 	import Logo from '$lib/components/brand/Logo.svelte';
 	import ThemeToggle from '$lib/components/brand/ThemeToggle.svelte';
 
@@ -23,6 +24,13 @@
 	// The study screen is a focus mode: it carries its own minimal header.
 	const focus = $derived(page.url.pathname.startsWith('/cards/study'));
 </script>
+
+<!-- iOS reads these when a page is added to the Home Screen, so every page carries them. -->
+<svelte:head>
+	{#each splashScreens as s (s.href)}
+		<link rel="apple-touch-startup-image" href={s.href} media={s.media} />
+	{/each}
+</svelte:head>
 
 <div class="bg-bg text-fg min-h-dvh">
 	{#if data.user && !focus}
@@ -53,7 +61,11 @@
 			</div>
 		</nav>
 	{:else if !data.user && !focus}
-		<div class="fixed right-4 bottom-4 z-20"><ThemeToggle theme={data.theme} /></div>
+		<div
+			class="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-20"
+		>
+			<ThemeToggle theme={data.theme} />
+		</div>
 	{/if}
 	{@render children()}
 </div>

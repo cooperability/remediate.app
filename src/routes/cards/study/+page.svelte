@@ -176,7 +176,7 @@
 				</div>
 			{/key}
 
-			<div class="bg-bg/85 sticky bottom-0 -mx-4 mt-auto px-4 py-3 backdrop-blur">
+			<div class="bg-bg/85 pb-safe sticky bottom-0 -mx-4 mt-auto px-4 pt-3 backdrop-blur">
 				<RatingBar
 					{flipped}
 					{busy}

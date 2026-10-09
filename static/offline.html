@@ -1,0 +1,106 @@
+<!doctype html>
+<!-- The service worker answers a failed page load with this file, at the URL that
+     failed. Self-contained: no app JS, so a retry is a plain reload of that URL. -->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0c0b10" media="(prefers-color-scheme: dark)" />
+		<title>Offline · Remediate</title>
+		<style>
+			@font-face {
+				font-family: 'Space Grotesk';
+				font-weight: 300 700;
+				font-display: swap;
+				src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+			}
+			:root {
+				--bg: #f6f5f1;
+				--surface: #ffffff;
+				--line: #dcd8cc;
+				--fg: #17161a;
+				--muted: #6b6860;
+				--accent: #5b3df5;
+				--accent-fg: #ffffff;
+				color-scheme: light dark;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #0c0b10;
+					--surface: #15141c;
+					--line: #2c2a38;
+					--fg: #efedf6;
+					--muted: #9a96a8;
+					--accent: #b4ff39;
+					--accent-fg: #0c0b10;
+				}
+			}
+			html {
+				background: var(--bg);
+				color: var(--fg);
+				font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+				-webkit-font-smoothing: antialiased;
+			}
+			body {
+				display: grid;
+				min-height: 100dvh;
+				margin: 0;
+				place-items: center;
+				padding: 0 1rem;
+				text-align: center;
+			}
+			main {
+				width: 100%;
+				max-width: 24rem;
+				box-sizing: border-box;
+				border: 1px solid var(--line);
+				border-radius: 1rem;
+				background: var(--surface);
+				padding: 2rem;
+			}
+			svg {
+				display: block;
+				margin: 0 auto 1.5rem;
+				fill: var(--accent-fg);
+			}
+			.tile {
+				fill: var(--accent);
+			}
+			h1 {
+				margin: 0;
+				font-size: 1.5rem;
+				letter-spacing: -0.025em;
+			}
+			p {
+				margin: 0.75rem 0 1.5rem;
+				color: var(--muted);
+				font-size: 0.875rem;
+			}
+			a {
+				display: block;
+				border-radius: 0.75rem;
+				background: var(--accent);
+				color: var(--accent-fg);
+				padding: 0.625rem 1rem;
+				font-size: 0.875rem;
+				font-weight: 500;
+				text-decoration: none;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true">
+				<rect width="32" height="32" rx="8" class="tile" />
+				<rect x="7" y="9" width="4" height="15" rx="1.5" />
+				<rect x="14" y="17" width="4" height="7" rx="1.5" />
+				<rect x="14" y="9" width="4" height="6" rx="1.5" opacity="0.45" />
+				<rect x="21" y="9" width="4" height="15" rx="1.5" />
+			</svg>
+			<h1>You're offline</h1>
+			<p>Remediate needs a connection to load your decks. Reconnect, then try again.</p>
+			<a href="">Try again</a>
+		</main>
+	</body>
+</html>

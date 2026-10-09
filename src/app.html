@@ -3,9 +3,20 @@
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<!-- cover lets the page reach the screen edges. The env(safe-area-inset-*) padding in
+		     app.css keeps content clear of the notch and the home indicator. -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
 		<meta name="theme-color" content="#0c0b10" media="(prefers-color-scheme: dark)" />
+		<!-- The manifest opens the app standalone. These cover iOS from before manifest support,
+		     and Chrome warns on the Apple tag alone. default keeps the status bar opaque, where
+		     black-translucent lays white status text over the page, unreadable on the light theme. -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content="Remediate" />
 		<link
 			rel="preload"
 			href="%sveltekit.assets%/fonts/space-grotesk-latin.woff2"

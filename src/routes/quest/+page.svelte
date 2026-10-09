@@ -397,7 +397,7 @@
 				<TravelList nodes={view.map.nodes} current={view.map.current} {busy} ongo={act} />
 			</div>
 
-			<div class="border-line bg-bg/90 sticky bottom-0 border-t px-4 py-3 backdrop-blur">
+			<div class="border-line bg-bg/90 pb-safe sticky bottom-0 border-t px-4 pt-3 backdrop-blur">
 				{#if view.encounter}
 					<button
 						class="btn btn-primary min-h-12 w-full text-base"
