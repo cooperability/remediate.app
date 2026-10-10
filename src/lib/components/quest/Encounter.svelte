@@ -241,7 +241,7 @@
 				<div in:fly={{ y: still ? 0 : 12, duration: still ? 0 : 200 }}>
 					<Flashcard card={encounter} {flipped} />
 				</div>
-				<div class="bg-bg/85 sticky bottom-0 -mx-4 mt-auto px-4 py-3 backdrop-blur">
+				<div class="bg-bg/85 pb-safe sticky bottom-0 -mx-4 mt-auto px-4 pt-3 backdrop-blur">
 					{#if failed}
 						<p
 							class="border-again/40 bg-again/10 mb-2 rounded-xl border px-3 py-2 text-sm"
@@ -266,7 +266,8 @@
 		width: 100vw;
 		max-width: none;
 		border: 0;
-		padding: 0;
+		/* The top layer sits outside body, so it needs its own clearance of a landscape notch. */
+		padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
 		background: color-mix(in srgb, var(--bg) 96%, transparent);
 		color: var(--fg);
 		overflow-y: auto;

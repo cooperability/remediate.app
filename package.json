@@ -21,7 +21,8 @@
 		"db:push": "drizzle-kit push",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"db:seed": "node --env-file-if-exists=.env --experimental-strip-types scripts/db-seed.ts"
+		"db:seed": "node --env-file-if-exists=.env --experimental-strip-types scripts/db-seed.ts",
+		"pwa:assets": "node --experimental-strip-types scripts/pwa-assets.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",
