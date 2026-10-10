@@ -442,7 +442,7 @@
 
 {#if notice}
 	<div
-		class="toast fixed inset-x-4 bottom-24 z-30 mx-auto flex max-w-md items-center gap-3 px-4 py-3 text-sm"
+		class="toast fixed inset-x-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-md items-center gap-3 px-4 py-3 text-sm"
 		class:error={notice.tone === 'error'}
 		in:fly={{ y: still ? 0 : 8, duration: 160 }}
 	>

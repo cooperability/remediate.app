@@ -94,3 +94,51 @@ test('offline, a page load shows the offline page, and Try again recovers', asyn
 	await expect(page.getByRole('heading', { name: "You're offline" })).toHaveCount(0);
 	await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Remediate');
 });
+
+test('offline, a plain form post shows the offline page', async ({ page, context }) => {
+	await page.goto('/');
+	await page.evaluate(() => navigator.serviceWorker.ready);
+	await page.reload();
+
+	// Log out and delete deck submit without JS, as POST navigations.
+	await context.setOffline(true);
+	await page.evaluate(() => {
+		const form = Object.assign(document.createElement('form'), {
+			method: 'POST',
+			action: '/login?/logout'
+		});
+		document.body.append(form);
+		form.submit();
+	});
+	await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+});
+
+test('the worker caches only the offline page and its fonts, and drops older caches', async ({
+	page,
+	context
+}) => {
+	// A cache left by an earlier deploy. offline.html registers no worker.
+	await page.goto('/offline.html');
+	await page.evaluate(() => caches.open('assets-stale'));
+
+	await page.goto('/');
+	await page.evaluate(() => navigator.serviceWorker.ready);
+	await expect
+		.poll(() => page.evaluate(() => caches.keys()))
+		.toEqual([expect.stringMatching(/^assets-(?!stale)/)]);
+	const cached = await page.evaluate(async () => {
+		const cache = await caches.open((await caches.keys())[0]);
+		return (await cache.keys()).map((r) => new URL(r.url).pathname);
+	});
+	expect(cached).toContain('/offline.html');
+	for (const path of cached)
+		expect(path === '/offline.html' || path.startsWith('/fonts/'), path).toBe(true);
+
+	// A controlled page gets the font from the worker, past the HTTP cache.
+	await page.reload();
+	await context.setOffline(true);
+	const status = await page.evaluate(
+		async () => (await fetch('/fonts/space-grotesk-latin.woff2', { cache: 'no-store' })).status
+	);
+	expect(status).toBe(200);
+});

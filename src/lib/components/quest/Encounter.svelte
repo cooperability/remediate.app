@@ -266,7 +266,8 @@
 		width: 100vw;
 		max-width: none;
 		border: 0;
-		padding: 0;
+		/* The top layer sits outside body, so it needs its own clearance of a landscape notch. */
+		padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
 		background: color-mix(in srgb, var(--bg) 96%, transparent);
 		color: var(--fg);
 		overflow-y: auto;

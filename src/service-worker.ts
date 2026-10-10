@@ -2,16 +2,16 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 /// <reference types="@sveltejs/kit" />
-import { build, files, version } from '$service-worker';
+import { files, version } from '$service-worker';
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 const CACHE = `assets-${version}`;
 const OFFLINE = '/offline.html';
-// Hashed build output and fonts never change under one name. Pages and API responses
-// are never cached: they belong to one user and go stale. Launch screens stay out too:
-// a device only ever shows one of them.
-const ASSETS = new Set([...build, ...files.filter((f) => f.startsWith('/fonts/')), OFFLINE]);
+// Only what the offline page needs: itself and the fonts. It runs no app JS, so the
+// build output stays with the HTTP cache, which already holds it as immutable. Pages
+// and API responses are never cached: they belong to one user and go stale.
+const ASSETS = new Set([...files.filter((f) => f.startsWith('/fonts/')), OFFLINE]);
 
 sw.addEventListener('install', (event) => {
 	event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll([...ASSETS])));
@@ -27,15 +27,19 @@ sw.addEventListener('activate', (event) => {
 
 sw.addEventListener('fetch', (event) => {
 	const { request } = event;
-	if (request.method !== 'GET') return;
 	const url = new URL(request.url);
-	if (url.origin === sw.location.origin && ASSETS.has(url.pathname)) {
-		event.respondWith(caches.match(url.pathname).then((hit) => hit ?? fetch(request)));
-	} else if (request.mode === 'navigate') {
+	if (request.mode === 'navigate') {
 		// Without this, a home-screen launch offline lands on Safari's error page, which a
-		// standalone app has no browser controls to leave.
+		// standalone app has no browser controls to leave. Any method: log out and delete
+		// deck are plain POST forms.
 		event.respondWith(
 			fetch(request).catch(async () => (await caches.match(OFFLINE)) ?? Response.error())
 		);
+	} else if (
+		request.method === 'GET' &&
+		url.origin === sw.location.origin &&
+		ASSETS.has(url.pathname)
+	) {
+		event.respondWith(caches.match(url.pathname).then((hit) => hit ?? fetch(request)));
 	}
 });
