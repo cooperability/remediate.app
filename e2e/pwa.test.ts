@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 // Size and alpha from the IHDR chunk that opens every PNG. Colour types 4 and 6 carry
 // alpha, and iOS fills transparent icon pixels with black.
@@ -95,13 +95,8 @@ test('offline, a page load shows the offline page, and Try again recovers', asyn
 	await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Remediate');
 });
 
-test('offline, a plain form post shows the offline page', async ({ page, context }) => {
-	await page.goto('/');
-	await page.evaluate(() => navigator.serviceWorker.ready);
-	await page.reload();
-
-	// Log out and delete deck submit without JS, as POST navigations.
-	await context.setOffline(true);
+// Log out and delete deck submit without JS, as POST navigations.
+async function logOut(page: Page) {
 	await page.evaluate(() => {
 		const form = Object.assign(document.createElement('form'), {
 			method: 'POST',
@@ -110,10 +105,28 @@ test('offline, a plain form post shows the offline page', async ({ page, context
 		document.body.append(form);
 		form.submit();
 	});
+}
+
+test('a form post goes through the worker online, and back to its page offline', async ({
+	page,
+	context
+}) => {
+	await page.goto('/');
+	await page.evaluate(() => navigator.serviceWorker.ready);
+	await page.reload();
+
+	// The action's 303 lands on /login. A GET of the action URL would stay on ?/logout.
+	await logOut(page);
+	await expect(page).toHaveURL('/login');
+
+	// Try again then reloads the form's page, never a GET of the action URL.
+	await context.setOffline(true);
+	await logOut(page);
 	await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+	await expect(page).toHaveURL('/login');
 });
 
-test('the worker caches only the offline page and its fonts, and drops older caches', async ({
+test('the worker caches only the offline page and its font, and drops older caches', async ({
 	page,
 	context
 }) => {
@@ -130,9 +143,7 @@ test('the worker caches only the offline page and its fonts, and drops older cac
 		const cache = await caches.open((await caches.keys())[0]);
 		return (await cache.keys()).map((r) => new URL(r.url).pathname);
 	});
-	expect(cached).toContain('/offline.html');
-	for (const path of cached)
-		expect(path === '/offline.html' || path.startsWith('/fonts/'), path).toBe(true);
+	expect(cached.sort()).toEqual(['/fonts/space-grotesk-latin.woff2', '/offline.html']);
 
 	// A controlled page gets the font from the worker, past the HTTP cache.
 	await page.reload();
