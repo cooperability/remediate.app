@@ -79,6 +79,14 @@ describe('allowlist', () => {
 		}
 	});
 
+	it('keeps what the editor toolbar writes', () => {
+		const out = sanitizeCardHtml(
+			'<h3>h</h3><h4>s</h4><s>s</s><strike>k</strike><mark>m</mark><ul class="dashed"><li>d</li></ul>'
+		);
+		for (const tag of ['h3', 'h4', 's', 'strike', 'mark']) expect(out).toContain(`<${tag}>`);
+		expect(out).toContain('<ul class="dashed">');
+	});
+
 	it('drops data attributes', () => {
 		expect(sanitizeCardHtml('<div data-guid="tNcJ[p<DNp">x</div>')).not.toContain('data-guid');
 	});

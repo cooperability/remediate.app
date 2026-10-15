@@ -49,6 +49,12 @@ const ALLOWED_TAGS = [
 	'a',
 	'sup',
 	'sub',
+	// The editor's strikethrough (browsers write <strike>), highlight and text styles.
+	's',
+	'strike',
+	'mark',
+	'h3',
+	'h4',
 	'table',
 	'tr',
 	'td',
