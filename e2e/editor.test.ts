@@ -334,6 +334,12 @@ test.describe('card editor', () => {
 	}) => {
 		const errors: string[] = [];
 		page.on('pageerror', (e) => errors.push(e.message));
+		// Escape that reached the card would ask about the unsaved changes.
+		const dialogs: string[] = [];
+		page.on('dialog', (d) => {
+			dialogs.push(d.message());
+			void d.dismiss();
+		});
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await context.addCookies([{ name: 'auth-session', value: token, url: baseURL! }]);
 		const deck = 'E2E Editor format';
@@ -357,8 +363,10 @@ test.describe('card editor', () => {
 		// Pressed again inside the highlight, it takes it off.
 		await tool('Highlight').click();
 		await expect(front.locator('mark')).toHaveCount(0);
-		await tool('Highlight').click();
+		// Taking it off is on the undo stack too, and undo restores the text once.
+		await tool('Undo edit (Ctrl+Z)').click();
 		await expect(front.locator('mark')).toHaveText('alpha');
+		await expect(front).toHaveText('alpha');
 		await page.keyboard.press('ControlOrMeta+a');
 		await tool('Strikethrough').click();
 		await expect(front.locator('strike, s')).toHaveText('alpha');
@@ -395,6 +403,16 @@ test.describe('card editor', () => {
 		await expect(back).toBeFocused();
 		await page.keyboard.press('Shift+Tab');
 		await expect(back.locator('ul ul, li ul')).toHaveCount(0);
+		// A top-level item does not un-nest further: Shift+Tab leaves the field, so a list never traps the keyboard.
+		await page.keyboard.press('Shift+Tab');
+		await expect(back).not.toBeFocused();
+		await expect(back.locator('ul.dashed > li')).toHaveText(['one', 'two']);
+		// Inline code across two items would run their lines together, so it does nothing.
+		await back.click();
+		await page.keyboard.press('ControlOrMeta+a');
+		await tool('Inline code').click();
+		await expect(back.locator('code')).toHaveCount(0);
+		await page.keyboard.press('ControlOrMeta+End');
 
 		// A bare address gets https, and the link box offers Remove once inside a link.
 		await page.keyboard.press('Enter');
@@ -456,6 +474,7 @@ test.describe('card editor', () => {
 		expect(stored.front).toContain('<mark>');
 		expect(stored.back).toContain('<ul class="dashed">');
 		expect(stored.tags).toEqual(['Biology::Cells', 'chem']);
+		expect(dialogs).toEqual([]);
 		expect(errors).toEqual([]);
 	});
 

@@ -70,10 +70,53 @@
 	// The field's value follows its input event, and direct DOM edits fire none.
 	const changed = () => field?.dispatchEvent(new Event('input', { bubbles: true }));
 
+	/** The selection as character offsets into the field's text. */
+	function offsets(): [number, number] | null {
+		const r = range();
+		if (!r || !field) return null;
+		const at = (node: Node, offset: number) => {
+			const p = document.createRange();
+			p.setStart(field!, 0);
+			p.setEnd(node, offset);
+			return p.toString().length;
+		};
+		return [at(r.startContainer, r.startOffset), at(r.endContainer, r.endOffset)];
+	}
+
+	function reselect([start, end]: [number, number]) {
+		// 4 is NodeFilter.SHOW_TEXT.
+		const walk = document.createTreeWalker(field!, 4);
+		const r = document.createRange();
+		let seen = 0;
+		let started = false;
+		for (let t = walk.nextNode() as Text | null; t; t = walk.nextNode() as Text | null) {
+			const next = seen + t.length;
+			if (!started && start <= next) {
+				r.setStart(t, start - seen);
+				started = true;
+			}
+			if (started && end <= next) {
+				r.setEnd(t, end - seen);
+				const sel = document.getSelection()!;
+				sel.removeAllRanges();
+				sel.addRange(r);
+				return;
+			}
+			seen = next;
+		}
+	}
+
+	// Chrome puts the caret at the start of the item after a list command, so the next
+	// Enter would split the line before what was typed. These keep it where it was.
+	const BLOCK = ['insertOrderedList', 'insertUnorderedList', 'indent', 'outdent', 'formatBlock'];
+
 	function run(cmd: string, arg?: string) {
 		if (!field?.isConnected) return;
 		field.focus();
+		const before = BLOCK.includes(cmd) ? offsets() : null;
 		document.execCommand(cmd, false, arg);
+		const after = before && offsets();
+		if (before && after && (after[0] !== before[0] || after[1] !== before[1])) reselect(before);
 		changed();
 		track();
 	}
@@ -91,25 +134,17 @@
 	function wrap(tag: 'mark' | 'code') {
 		const hit = around(tag);
 		if (hit) {
-			// Unwrapped by hand: Chrome moves a selection around the element to the text
-			// inside it, so insertHTML would write the text back into the same element.
-			const [first, last] = [hit.firstChild, hit.lastChild];
-			hit.replaceWith(...hit.childNodes);
-			if (first && last) {
-				const r = document.createRange();
-				r.setStartBefore(first);
-				r.setEndAfter(last);
-				const sel = document.getSelection()!;
-				sel.removeAllRanges();
-				sel.addRange(r);
-			}
-			changed();
-			return track();
+			// Chrome moves a selection around the element to the text inside it, so bare
+			// HTML would land back inside the element. A span lands outside, and Chrome drops it.
+			select(hit);
+			return run('insertHTML', `<span>${hit.innerHTML}</span>`);
 		}
 		const r = range();
 		if (!r || r.collapsed) return;
 		const box = document.createElement('div');
 		box.append(r.cloneContents());
+		// Across blocks the result would be blocks inside an inline tag, or lines run together.
+		if (box.querySelector('div, p, li, ul, ol, h3, h4, pre, table')) return;
 		const inner = tag === 'code' ? escapeHtml(r.toString()) : sanitizeCardHtml(box.innerHTML);
 		run('insertHTML', `<${tag}>${inner}</${tag}>`);
 	}
@@ -119,7 +154,9 @@
 		const cmd = kind === 'number' ? 'insertOrderedList' : 'insertUnorderedList';
 		if (now && now !== kind && now !== 'number' && kind !== 'number') {
 			// Bullets and dashes are the same list with a different marker.
-			around('ul')?.classList.toggle('dashed', kind === 'dash');
+			const ul = around('ul');
+			if (kind === 'dash') ul?.classList.add('dashed');
+			else ul?.removeAttribute('class');
 			changed();
 			return track();
 		}
@@ -133,6 +170,16 @@
 
 	function indent(out: boolean) {
 		if (around('li')) run(out ? 'outdent' : 'indent');
+	}
+
+	// Tab nests only where nesting is possible, and Shift+Tab un-nests only a nested
+	// item. Anywhere else they move focus, so a list never traps the keyboard.
+	function tabIndents(out: boolean) {
+		const li = around('li');
+		if (!li) return false;
+		if (!out) return li.previousElementSibling?.tagName === 'LI';
+		const outer = li.parentElement?.parentElement?.closest('ul, ol, li');
+		return Boolean(outer && field?.contains(outer));
 	}
 
 	function style(tag: string) {
@@ -151,6 +198,9 @@
 				: `https://${u}`;
 		return /^(https?:\/\/[^\s/]|mailto:\S)/i.test(full) ? full : null;
 	});
+
+	// Safari focuses no clicked button, so a click would blur the link box to nothing and close the bar.
+	const keep = (e: MouseEvent) => e.preventDefault();
 
 	function openLink() {
 		const r = range();
@@ -200,7 +250,7 @@
 		const mod = e.ctrlKey || e.metaKey;
 		const k = e.key.toLowerCase();
 		const act =
-			e.key === 'Tab' && !mod && around('li')
+			e.key === 'Tab' && !mod && tabIndents(e.shiftKey)
 				? () => indent(e.shiftKey)
 				: e.key === 'Escape' && panel
 					? () => (panel = null)
@@ -340,16 +390,21 @@
 				type="button"
 				class="btn btn-primary min-h-11 px-3 py-1 text-sm lg:min-h-8"
 				disabled={!href}
+				onmousedown={keep}
 				onclick={applyLink}>{on.link ? 'Update' : 'Add link'}</button
 			>
 			{#if on.link}
-				<button type="button" class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8" onclick={unlink}
-					>Remove</button
+				<button
+					type="button"
+					class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8"
+					onmousedown={keep}
+					onclick={unlink}>Remove</button
 				>
 			{/if}
 			<button
 				type="button"
 				class="btn btn-ghost min-h-11 px-3 py-1 text-sm lg:min-h-8"
+				onmousedown={keep}
 				onclick={closeLink}>Cancel</button
 			>
 		</div>
