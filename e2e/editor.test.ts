@@ -558,6 +558,16 @@ test.describe('card editor', () => {
 		await expect(front.locator('h4, pre')).toHaveCount(0);
 		await expect(front).toHaveText('line');
 
+		// Escape inside the bar closes its menu and hands the keyboard back to the field. It
+		// never reaches the card.
+		await page.keyboard.press('Alt+F10');
+		await page.keyboard.press('Enter');
+		await expect(page.getByRole('group', { name: 'Text styles' })).toBeVisible();
+		await page.keyboard.press('Escape');
+		await expect(page.getByRole('group', { name: 'Text styles' })).toHaveCount(0);
+		await expect(front).toBeFocused();
+		await expect(page).toHaveURL(/new=1/);
+
 		// The menu's Indent and Outdent, for a phone with no Tab key.
 		await tool('Bulleted list').click();
 		await page.keyboard.press('End');

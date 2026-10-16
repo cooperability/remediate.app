@@ -333,13 +333,20 @@
 
 <!-- A press anywhere on the bar keeps focus where it is: a mousedown that moved it would drop the
 	field's selection first, and Safari focuses no clicked button, so the field would blur to nothing
-	and the bar would close. Only the link box takes focus from a press. -->
+	and the bar would close. Only the link box takes focus from a press. Escape on the bar closes its
+	menu and returns to the field, so it never reaches the card. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	data-format-bar
 	class="w-full space-y-2 {field ? '' : 'max-lg:hidden'}"
 	onmousedown={(e) => {
 		if (e.target !== linkInput) e.preventDefault();
+	}}
+	onkeydown={(e) => {
+		if (e.key !== 'Escape' || e.defaultPrevented) return;
+		e.preventDefault();
+		field?.focus();
+		panel = null;
 	}}
 >
 	{#if panel === 'styles'}
