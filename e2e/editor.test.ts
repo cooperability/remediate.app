@@ -586,6 +586,12 @@ test.describe('card editor', () => {
 		await address.fill('name@example.com');
 		await address.press('Enter');
 		await expect(back.locator('a[href="mailto:name@example.com"]')).toHaveText('name@example.com');
+		// A typed mailto keeps its one scheme, even when the address starts with a digit.
+		await page.keyboard.press('Enter');
+		await page.keyboard.press('ControlOrMeta+k');
+		await address.fill('mailto:2fa@x.io');
+		await address.press('Enter');
+		await expect(back.locator('a[href="mailto:2fa@x.io"]')).toHaveText('2fa@x.io');
 
 		// Focus follows the HTML source toggle both ways, so the bar keeps its field.
 		await page.keyboard.press('ControlOrMeta+Shift+x');

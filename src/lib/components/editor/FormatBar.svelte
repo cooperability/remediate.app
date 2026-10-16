@@ -189,11 +189,11 @@
 	}
 
 	// The sanitizer keeps https, http and mailto links only. A bare address gets a scheme.
-	// A colon before a digit is a port, as in localhost:5173, not a scheme.
+	// A colon before a digit is a port, as in localhost:5173, not a scheme, except after mailto.
 	const href = $derived.by(() => {
 		const u = url.trim();
 		if (!u) return null;
-		const full = /^[a-z][a-z\d+.-]*:(?!\d)/i.test(u)
+		const full = /^(mailto:|[a-z][a-z\d+.-]*:(?!\d))/i.test(u)
 			? u
 			: /^[^\s/@]+@[^\s/@]+$/.test(u)
 				? `mailto:${u}`
