@@ -345,7 +345,7 @@ test.describe('card editor', () => {
 		const deck = 'E2E Editor format';
 		// The completer offers the user's own tags.
 		await sql`insert into nodes (id, user_id, deck, front, back, tags) values
-			('e2e-format-seed', ${USER_ID}, ${deck}, 'seed', 'b', ${['Biology::Cells', 'chem']})`;
+			('e2e-format-seed', ${USER_ID}, ${deck}, 'seed', 'b', ${['Biology::Cells', 'chem', 'cellar', 'Accelerate']})`;
 		await page.goto(`/cards/browse?new=1&deck=${encodeURIComponent(deck)}`);
 		await page.waitForLoadState('networkidle');
 		const bar = page.getByRole('toolbar', { name: 'Formatting' });
@@ -446,15 +446,19 @@ test.describe('card editor', () => {
 		await expect(page).toHaveURL(/new=1/);
 		await expect(back).toBeFocused();
 
-		// The completer: a `::` part matches, arrows pick, and a typed case adopts the stored one.
+		// The completer ranks a prefix, then a `::` part, then a substring. Arrows pick,
+		// and a typed case adopts the stored one.
 		const tags = page.locator('#edit-tags');
 		await tags.click();
 		await expect(bar).toBeVisible();
 		await expect(tool('Bold (Ctrl+B)')).toBeDisabled();
 		await tags.pressSequentially('cel');
 		await expect(page.locator('#edit-tags-list').getByRole('option')).toHaveText([
-			'Biology::Cells'
+			'cellar',
+			'Biology::Cells',
+			'Accelerate'
 		]);
+		await tags.press('ArrowDown');
 		await tags.press('ArrowDown');
 		await tags.press('Enter');
 		await tags.pressSequentially('CHEM ');
