@@ -442,6 +442,9 @@ test.describe('card editor', () => {
 		await page.keyboard.press('ControlOrMeta+k');
 		await address.fill('javascript:alert(1)');
 		await expect(page.getByRole('button', { name: 'Add link' })).toBeDisabled();
+		// A port is no scheme: a bare host with one gets https.
+		await address.fill('localhost:5173');
+		await expect(page.getByRole('button', { name: 'Add link' })).toBeEnabled();
 		await address.press('Escape');
 		await expect(page).toHaveURL(/new=1/);
 		await expect(back).toBeFocused();
