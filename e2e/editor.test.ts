@@ -486,7 +486,7 @@ test.describe('card editor', () => {
 		await page.keyboard.press('ControlOrMeta+Enter');
 		await expect(page.getByText(`Added to ${deck}.`)).toBeVisible();
 		const [stored] =
-			await sql`select front, back, tags from nodes where user_id = ${USER_ID} and deck = ${deck} and id <> 'e2e-format-seed'`;
+			await sql`select front, back, tags from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck} and id <> 'e2e-format-seed'`;
 		expect(stored.front).toMatch(/<h3>.*<(strike|s)>.*alpha/);
 		expect(stored.front).toContain('<mark>');
 		expect(stored.back).toContain('<ul class="dashed">');
@@ -501,7 +501,7 @@ test.describe('card editor', () => {
 			.poll(
 				async () =>
 					(
-						await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and deck = ${deck}`
+						await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck}`
 					)[0].n
 			)
 			.toBe(3);

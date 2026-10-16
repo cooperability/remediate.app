@@ -380,8 +380,10 @@
 				aria-invalid={url.trim() !== '' && !href}
 				bind:value={url}
 				onkeydown={(e) => {
-					// Enter would submit the card, and Escape would close it.
-					if (e.key === 'Enter') {
+					// Enter would submit the card, and Escape would close it. Ctrl+Enter still
+					// saves: applying the link first would close the box, and the editor ignores
+					// a key from an element no longer in it.
+					if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
 						e.preventDefault();
 						applyLink();
 					} else if (e.key === 'Escape') {
