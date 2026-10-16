@@ -522,9 +522,15 @@ test.describe('card editor', () => {
 		await expect(bar).toBeHidden();
 		await page.locator('div#edit-front').click();
 		await expect(bar).toBeVisible();
-		// One row that scrolls sideways, never a wrap that eats the screen.
+		// One row that scrolls sideways, never a wrap that eats the screen. The sheet clips
+		// what spills, so the bar's own edge is what shows a row too wide for the phone.
 		const box = await bar.boundingBox();
 		expect(box!.height).toBeLessThan(60);
+		expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+		const overflow = await page.evaluate(
+			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
+		);
+		expect(overflow).toBe(0);
 		// A tap that misses a button, on a gap or a separator, keeps the field's focus.
 		const gap = await bar.locator('span[aria-hidden="true"]').first().boundingBox();
 		await page.mouse.click(gap!.x + gap!.width / 2, gap!.y + gap!.height / 2);
@@ -532,10 +538,6 @@ test.describe('card editor', () => {
 		await expect(bar).toBeVisible();
 		await page.locator('#edit-deck').click();
 		await expect(bar).toBeHidden();
-		const overflow = await page.evaluate(
-			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
-		);
-		expect(overflow).toBe(0);
 	});
 
 	test('a re-import keeps a card edited here, and says so', async ({ page, context, baseURL }) => {
