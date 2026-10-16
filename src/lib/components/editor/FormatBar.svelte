@@ -178,7 +178,8 @@
 	function tabIndents(out: boolean) {
 		const li = around('li');
 		if (!li) return false;
-		if (!out) return li.previousElementSibling?.tagName === 'LI';
+		// Chrome writes a sublist as a sibling of the items, so an item after one can nest too.
+		if (!out) return ['LI', 'UL', 'OL'].includes(li.previousElementSibling?.tagName ?? '');
 		const outer = li.parentElement?.parentElement?.closest('ul, ol, li');
 		return Boolean(outer && field?.contains(outer));
 	}

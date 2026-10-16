@@ -594,6 +594,19 @@ test.describe('card editor', () => {
 		await tool('Clear formatting').click();
 		await expect(front.locator('sup')).toHaveCount(0);
 
+		// An item after a sublist can nest too: Chrome writes the sublist as the item's sibling.
+		await page.keyboard.press('End');
+		await page.keyboard.press('Enter');
+		await page.keyboard.type('two');
+		await page.keyboard.press('Tab');
+		await page.keyboard.press('Enter');
+		await page.keyboard.type('three');
+		await page.keyboard.press('Shift+Tab');
+		await expect(front.locator('ul ul li, li ul li')).toHaveText(['two']);
+		await page.keyboard.press('Tab');
+		await expect(front).toBeFocused();
+		await expect(front.locator('ul ul li, li ul li')).toHaveText(['two', 'three']);
+
 		// A bare address at a caret goes in as a mail link, its text the address.
 		await back.click();
 		await page.keyboard.press('ControlOrMeta+k');
