@@ -523,6 +523,104 @@ test.describe('card editor', () => {
 		expect(errors).toEqual([]);
 	});
 
+	test('the other text styles, shortcuts, link kinds and completer keys', async ({
+		page,
+		context,
+		baseURL
+	}) => {
+		const errors: string[] = [];
+		page.on('pageerror', (e) => errors.push(e.message));
+		const dialogs: string[] = [];
+		page.on('dialog', (d) => {
+			dialogs.push(d.message());
+			void d.dismiss();
+		});
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await context.addCookies([{ name: 'auth-session', value: token, url: baseURL! }]);
+		await sql`insert into nodes (id, user_id, deck, front, back, tags) values
+			('e2e-keys-seed', ${USER_ID}, 'E2E Editor more', 'seed', 'b', ${['qxone', 'qxtwo', 'qyak']})`;
+		await page.goto('/cards/browse?new=1');
+		await page.waitForLoadState('networkidle');
+		const bar = page.getByRole('toolbar', { name: 'Formatting' });
+		const tool = (name: string) => bar.getByRole('button', { name, exact: true });
+		const styles = page.getByRole('button', { name: 'Text styles and indent' });
+		const style = (name: string) =>
+			page.getByRole('group', { name: 'Text styles' }).getByRole('button', { name, exact: true });
+		const front = page.locator('div#edit-front');
+		const back = page.locator('div#edit-back');
+
+		await typeInto(page, '#edit-front', 'line');
+		await styles.click();
+		await style('Subheading').click();
+		await expect(front.locator('h4')).toHaveText('line');
+		await styles.click();
+		await style('Monospaced').click();
+		await expect(front.locator('pre')).toHaveText('line');
+		await styles.click();
+		await style('Body').click();
+		await expect(front.locator('h4, pre')).toHaveCount(0);
+		await expect(front).toHaveText('line');
+
+		// The menu's Indent and Outdent, for a phone with no Tab key.
+		await tool('Bulleted list').click();
+		await page.keyboard.press('End');
+		await page.keyboard.press('Enter');
+		await page.keyboard.type('sub');
+		await styles.click();
+		await style('Indent ⇥').click();
+		await expect(front.locator('li ul, ul ul')).toHaveCount(1);
+		await style('⇤ Outdent').click();
+		await expect(front.locator('li ul, ul ul')).toHaveCount(0);
+		await page.keyboard.press('Escape');
+
+		// Anki's subscript and superscript keys.
+		await page.keyboard.press('Shift+Home');
+		await page.keyboard.press('ControlOrMeta+Equal');
+		await expect(front.locator('sub')).toHaveText('sub');
+		await page.keyboard.press('ControlOrMeta+z');
+		await expect(front.locator('sub')).toHaveCount(0);
+		await page.keyboard.press('ControlOrMeta+Shift+Equal');
+		await expect(front.locator('sup')).toHaveText('sub');
+
+		// A bare address at a caret goes in as a mail link, its text the address.
+		await back.click();
+		await page.keyboard.press('ControlOrMeta+k');
+		const address = page.getByLabel('Link address');
+		await address.fill('name@example.com');
+		await address.press('Enter');
+		await expect(back.locator('a[href="mailto:name@example.com"]')).toHaveText('name@example.com');
+
+		// Focus follows the HTML source toggle both ways, so the bar keeps its field.
+		await page.keyboard.press('ControlOrMeta+Shift+x');
+		await expect(page.locator('textarea#edit-back')).toBeFocused();
+		await page.keyboard.press('ControlOrMeta+Shift+x');
+		await expect(back).toBeFocused();
+
+		// ArrowUp from no pick wraps to the last match. Tab and Space take the pick, and
+		// Escape closes the list, not the card.
+		const tags = page.locator('#edit-tags');
+		const options = page.locator('#edit-tags-list').getByRole('option');
+		await tags.click();
+		await tags.pressSequentially('qx');
+		await expect(options).toHaveText(['qxone', 'qxtwo']);
+		await tags.press('ArrowUp');
+		await expect(options.filter({ hasText: 'qxtwo' })).toHaveAttribute('aria-selected', 'true');
+		await tags.press('Tab');
+		await expect(tags).toBeFocused();
+		await tags.pressSequentially('qx');
+		await tags.press('ArrowDown');
+		await tags.press(' ');
+		const chips = page.getByRole('button', { name: /^Edit tag / });
+		await expect(chips).toHaveText(['qxtwo', 'qxone']);
+		await tags.pressSequentially('qy');
+		await expect(options).toHaveText(['qyak']);
+		await tags.press('Escape');
+		await expect(page.locator('#edit-tags-list')).toBeHidden();
+		await expect(page).toHaveURL(/new=1/);
+		expect(dialogs).toEqual([]);
+		expect(errors).toEqual([]);
+	});
+
 	test('on a phone the bar shows only while a field has focus', async ({
 		page,
 		context,
