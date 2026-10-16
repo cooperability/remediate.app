@@ -588,6 +588,8 @@ test.describe('card editor', () => {
 		await expect(front.locator('sub')).toHaveCount(0);
 		await page.keyboard.press('ControlOrMeta+Shift+Equal');
 		await expect(front.locator('sup')).toHaveText('sub');
+		await tool('Clear formatting').click();
+		await expect(front.locator('sup')).toHaveCount(0);
 
 		// A bare address at a caret goes in as a mail link, its text the address.
 		await back.click();
@@ -602,6 +604,14 @@ test.describe('card editor', () => {
 		await address.fill('mailto:2fa@x.io');
 		await address.press('Enter');
 		await expect(back.locator('a[href="mailto:2fa@x.io"]')).toHaveText('2fa@x.io');
+		// Inside a link the box updates its address and keeps its text.
+		await page.keyboard.press('ArrowLeft');
+		await page.keyboard.press('ControlOrMeta+k');
+		await expect(address).toHaveValue('mailto:2fa@x.io');
+		await address.fill('example.org');
+		await page.getByRole('button', { name: 'Update', exact: true }).click();
+		await expect(back.locator('a[href="https://example.org"]')).toHaveText('2fa@x.io');
+		await expect(back.locator('a[href="mailto:2fa@x.io"]')).toHaveCount(0);
 
 		// Focus follows the HTML source toggle both ways, so the bar keeps its field.
 		await page.keyboard.press('ControlOrMeta+Shift+x');
