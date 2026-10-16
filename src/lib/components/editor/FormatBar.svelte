@@ -183,6 +183,15 @@
 		return Boolean(outer && field?.contains(outer));
 	}
 
+	// From the keyboard the menu takes focus, since it sits before the bar in Tab order. A tap
+	// leaves focus in the field, which keeps a phone's keyboard up.
+	function toggleStyles(e: MouseEvent) {
+		panel = panel === 'styles' ? null : 'styles';
+		if (!panel || e.detail !== 0) return;
+		flushSync();
+		document.getElementById('format-styles')?.querySelector('button')?.focus();
+	}
+
 	function style(tag: string) {
 		run('formatBlock', `<${tag}>`);
 		panel = null;
@@ -350,7 +359,7 @@
 	}}
 >
 	{#if panel === 'styles'}
-		<div class="flex flex-wrap gap-1" role="group" aria-label="Text styles">
+		<div id="format-styles" class="flex flex-wrap gap-1" role="group" aria-label="Text styles">
 			{#each STYLES as s (s.tag)}
 				<button
 					type="button"
@@ -436,9 +445,10 @@
 			title="Text styles and indent"
 			aria-label="Text styles and indent"
 			aria-expanded={panel === 'styles'}
+			aria-controls={panel === 'styles' ? 'format-styles' : undefined}
 			class:!bg-accent-soft={panel === 'styles'}
 			disabled={!field}
-			onclick={() => (panel = panel === 'styles' ? null : 'styles')}>Aa</button
+			onclick={toggleStyles}>Aa</button
 		>
 		{#each TOOLS as t, i (typeof t === 'string' ? i : t.title)}
 			{#if typeof t === 'string'}

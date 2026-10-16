@@ -562,7 +562,10 @@ test.describe('card editor', () => {
 		// never reaches the card.
 		await page.keyboard.press('Alt+F10');
 		await page.keyboard.press('Enter');
+		// Opened from the keyboard, the menu takes focus, so Tab need not go back past it.
 		await expect(page.getByRole('group', { name: 'Text styles' })).toBeVisible();
+		await expect(styles).toHaveAttribute('aria-controls', 'format-styles');
+		await expect(style('Heading')).toBeFocused();
 		await page.keyboard.press('Escape');
 		await expect(page.getByRole('group', { name: 'Text styles' })).toHaveCount(0);
 		await expect(front).toBeFocused();
