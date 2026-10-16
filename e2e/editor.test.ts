@@ -466,6 +466,11 @@ test.describe('card editor', () => {
 		await expect(tags).toBeFocused();
 		await tags.press('Enter');
 
+		// A half-typed address left in the link box is no URL the form checks, so the card saves.
+		await back.click();
+		await page.keyboard.press('ControlOrMeta+k');
+		await address.fill('example.com');
+		await back.click();
 		await page.keyboard.press('ControlOrMeta+Enter');
 		await expect(page.getByText(`Added to ${deck}.`)).toBeVisible();
 		const [stored] =
@@ -474,6 +479,20 @@ test.describe('card editor', () => {
 		expect(stored.front).toContain('<mark>');
 		expect(stored.back).toContain('<ul class="dashed">');
 		expect(stored.tags).toEqual(['Biology::Cells', 'chem']);
+
+		// Ctrl+Enter inside the link box saves the card too.
+		await typeInto(page, '#edit-front', 'second');
+		await page.keyboard.press('ControlOrMeta+k');
+		await address.fill('example.com');
+		await address.press('ControlOrMeta+Enter');
+		await expect
+			.poll(
+				async () =>
+					(
+						await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and deck = ${deck}`
+					)[0].n
+			)
+			.toBe(3);
 		expect(dialogs).toEqual([]);
 		expect(errors).toEqual([]);
 	});

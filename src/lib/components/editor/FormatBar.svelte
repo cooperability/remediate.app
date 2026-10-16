@@ -366,7 +366,7 @@
 				bind:this={linkInput}
 				id="format-link"
 				class="input min-h-11 min-w-0 flex-1 text-sm lg:min-h-8 lg:py-1"
-				type="url"
+				type="text"
 				inputmode="url"
 				autocomplete="off"
 				autocapitalize="off"
