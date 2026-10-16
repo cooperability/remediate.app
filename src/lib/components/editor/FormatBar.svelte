@@ -199,9 +199,6 @@
 		return /^(https?:\/\/[^\s/]|mailto:\S)/i.test(full) ? full : null;
 	});
 
-	// Safari focuses no clicked button, so a click would blur the link box to nothing and close the bar.
-	const keep = (e: MouseEvent) => e.preventDefault();
-
 	function openLink() {
 		const r = range();
 		if (!r) return;
@@ -328,8 +325,17 @@
 	const pressed = (key?: string) => (key ? Boolean(key === list || on[key]) : undefined);
 </script>
 
-<!-- Buttons keep focus in the field: a mousedown that moved it would drop the selection first. -->
-<div data-format-bar class="w-full space-y-2 {field ? '' : 'max-lg:hidden'}">
+<!-- A press anywhere on the bar keeps focus where it is: a mousedown that moved it would drop the
+	field's selection first, and Safari focuses no clicked button, so the field would blur to nothing
+	and the bar would close. Only the link box takes focus from a press. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	data-format-bar
+	class="w-full space-y-2 {field ? '' : 'max-lg:hidden'}"
+	onmousedown={(e) => {
+		if (e.target !== linkInput) e.preventDefault();
+	}}
+>
 	{#if panel === 'styles'}
 		<div class="flex flex-wrap gap-1" role="group" aria-label="Text styles">
 			{#each STYLES as s (s.tag)}
@@ -338,7 +344,6 @@
 					class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8 {s.cls}"
 					aria-pressed={styled(s.tag)}
 					class:!bg-accent-soft={styled(s.tag)}
-					onmousedown={(e) => e.preventDefault()}
 					onclick={() => style(s.tag)}>{s.label}</button
 				>
 			{/each}
@@ -347,7 +352,6 @@
 				class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8"
 				title="Outdent (Shift+Tab)"
 				disabled={!list}
-				onmousedown={(e) => e.preventDefault()}
 				onclick={() => indent(true)}>⇤ Outdent</button
 			>
 			<button
@@ -355,7 +359,6 @@
 				class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8"
 				title="Indent (Tab)"
 				disabled={!list}
-				onmousedown={(e) => e.preventDefault()}
 				onclick={() => indent(false)}>Indent ⇥</button
 			>
 		</div>
@@ -390,21 +393,16 @@
 				type="button"
 				class="btn btn-primary min-h-11 px-3 py-1 text-sm lg:min-h-8"
 				disabled={!href}
-				onmousedown={keep}
 				onclick={applyLink}>{on.link ? 'Update' : 'Add link'}</button
 			>
 			{#if on.link}
-				<button
-					type="button"
-					class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8"
-					onmousedown={keep}
-					onclick={unlink}>Remove</button
+				<button type="button" class="btn min-h-11 px-3 py-1 text-sm lg:min-h-8" onclick={unlink}
+					>Remove</button
 				>
 			{/if}
 			<button
 				type="button"
 				class="btn btn-ghost min-h-11 px-3 py-1 text-sm lg:min-h-8"
-				onmousedown={keep}
 				onclick={closeLink}>Cancel</button
 			>
 		</div>
@@ -424,7 +422,6 @@
 			aria-expanded={panel === 'styles'}
 			class:!bg-accent-soft={panel === 'styles'}
 			disabled={!field}
-			onmousedown={(e) => e.preventDefault()}
 			onclick={() => (panel = panel === 'styles' ? null : 'styles')}>Aa</button
 		>
 		{#each TOOLS as t, i (typeof t === 'string' ? i : t.title)}
@@ -440,7 +437,6 @@
 					aria-label={t.title}
 					aria-pressed={pressed(t.key)}
 					disabled={!field}
-					onmousedown={(e) => e.preventDefault()}
 					onclick={t.on}>{t.label}</button
 				>
 			{/if}

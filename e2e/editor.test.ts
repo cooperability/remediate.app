@@ -517,6 +517,11 @@ test.describe('card editor', () => {
 		// One row that scrolls sideways, never a wrap that eats the screen.
 		const box = await bar.boundingBox();
 		expect(box!.height).toBeLessThan(60);
+		// A tap that misses a button, on a gap or a separator, keeps the field's focus.
+		const gap = await bar.locator('span[aria-hidden="true"]').first().boundingBox();
+		await page.mouse.click(gap!.x + gap!.width / 2, gap!.y + gap!.height / 2);
+		await expect(page.locator('div#edit-front')).toBeFocused();
+		await expect(bar).toBeVisible();
 		await page.locator('#edit-deck').click();
 		await expect(bar).toBeHidden();
 		const overflow = await page.evaluate(
