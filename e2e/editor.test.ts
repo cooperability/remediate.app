@@ -511,14 +511,11 @@ test.describe('card editor', () => {
 		await page.keyboard.press('ControlOrMeta+k');
 		await address.fill('example.com');
 		await address.press('ControlOrMeta+Enter');
-		await expect
-			.poll(
-				async () =>
-					(
-						await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck}`
-					)[0].n
-			)
-			.toBe(3);
+		// A saved new card clears the editor for the next one.
+		await expect(front).toHaveText('');
+		const [{ n }] =
+			await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck}`;
+		expect(n).toBe(3);
 		expect(dialogs).toEqual([]);
 		expect(errors).toEqual([]);
 	});
