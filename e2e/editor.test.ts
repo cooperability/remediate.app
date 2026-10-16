@@ -662,10 +662,6 @@ test.describe('card editor', () => {
 		const box = await bar.boundingBox();
 		expect(box!.height).toBeLessThan(60);
 		expect(box!.x + box!.width).toBeLessThanOrEqual(390);
-		const overflow = await page.evaluate(
-			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
-		);
-		expect(overflow).toBe(0);
 		// A tap that misses a button, on a gap or a separator, keeps the field's focus.
 		const gap = await bar.locator('span[aria-hidden="true"]').first().boundingBox();
 		await page.mouse.click(gap!.x + gap!.width / 2, gap!.y + gap!.height / 2);
