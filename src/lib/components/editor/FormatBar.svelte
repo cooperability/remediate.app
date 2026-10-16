@@ -14,6 +14,7 @@
 	let panel = $state<'styles' | 'link' | null>(null);
 	let url = $state('');
 	let linkInput = $state<HTMLInputElement>();
+	let toolbar = $state<HTMLElement>();
 	// The field's selection while the link box has focus.
 	let saved: Range | null = null;
 
@@ -244,6 +245,8 @@
 	}
 
 	// Anki's field shortcuts. Ctrl+B, I and U, and undo and redo, are the browser's own.
+	// Tab from a field goes to the tags, past which the bar is disabled, so Alt+F10, the
+	// usual editor key for a toolbar, takes the keyboard into the bar.
 	function onkeydown(e: KeyboardEvent) {
 		const mod = e.ctrlKey || e.metaKey;
 		const k = e.key.toLowerCase();
@@ -258,7 +261,9 @@
 							? () => run('subscript')
 							: mod && !e.shiftKey && k === 'k'
 								? openLink
-								: null;
+								: e.altKey && e.key === 'F10'
+									? () => toolbar?.querySelector('button')?.focus()
+									: null;
 		if (!act) return;
 		e.preventDefault();
 		act();
@@ -412,6 +417,7 @@
 	{/if}
 
 	<div
+		bind:this={toolbar}
 		class="-mx-1 flex gap-1 overflow-x-auto px-1 max-lg:[scrollbar-width:none] lg:flex-wrap"
 		role="toolbar"
 		aria-label="Formatting"

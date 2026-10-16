@@ -376,6 +376,20 @@ test.describe('card editor', () => {
 		await tool('Redo edit (Ctrl+Shift+Z)').click();
 		await expect(front.locator('strike, s')).toHaveText('alpha');
 
+		// Tab from a field leads away from the bar, so Alt+F10 takes the keyboard into it.
+		await page.keyboard.press('ControlOrMeta+a');
+		await page.keyboard.press('Alt+F10');
+		await expect(page.getByRole('button', { name: 'Text styles and indent' })).toBeFocused();
+		await page.keyboard.press('Tab');
+		await page.keyboard.press('Tab');
+		await page.keyboard.press('Tab');
+		await expect(tool('Bold (Ctrl+B)')).toBeFocused();
+		await page.keyboard.press('Enter');
+		await expect(front.locator('b, strong')).toHaveText('alpha');
+		await expect(front).toBeFocused();
+		await page.keyboard.press('ControlOrMeta+z');
+		await expect(front.locator('b, strong')).toHaveCount(0);
+
 		// Text styles, and Escape closes their menu, not the card.
 		await page.getByRole('button', { name: 'Text styles and indent' }).click();
 		await page.getByRole('button', { name: 'Heading', exact: true }).click();
