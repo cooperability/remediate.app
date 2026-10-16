@@ -58,10 +58,10 @@
 	}
 
 	$effect(() => {
-		if (!field) {
-			panel = null;
-			return;
-		}
+		// A panel acts on the field it opened from, so a move to another field closes it.
+		panel = null;
+		saved = null;
+		if (!field) return;
 		track();
 		document.addEventListener('selectionchange', track);
 		return () => document.removeEventListener('selectionchange', track);

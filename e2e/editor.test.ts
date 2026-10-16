@@ -445,6 +445,11 @@ test.describe('card editor', () => {
 		await address.press('Escape');
 		await expect(page).toHaveURL(/new=1/);
 		await expect(back).toBeFocused();
+		// The link box belongs to the field it opened from: moving to the other one closes it.
+		await page.keyboard.press('ControlOrMeta+k');
+		await expect(address).toBeVisible();
+		await front.click();
+		await expect(address).toHaveCount(0);
 
 		// The completer ranks a prefix, then a `::` part, then a substring. Arrows pick,
 		// and a typed case adopts the stored one.
