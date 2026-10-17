@@ -524,6 +524,16 @@ test.describe('card editor', () => {
 		const [{ n }] =
 			await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck}`;
 		expect(n).toBe(3);
+
+		// A click on the save button with the link box open lands: nothing shifts under it.
+		await typeInto(page, '#edit-front', 'third');
+		await page.keyboard.press('ControlOrMeta+k');
+		await address.fill('example.com');
+		await page.getByRole('button', { name: /^Add card/ }).click();
+		await expect(front).toHaveText('');
+		const [{ n: after }] =
+			await sql`select count(*)::int as n from nodes where user_id = ${USER_ID} and kind = 'card' and deck = ${deck}`;
+		expect(after).toBe(4);
 		expect(dialogs).toEqual([]);
 		expect(errors).toEqual([]);
 	});

@@ -68,12 +68,13 @@
 	let form = $state<HTMLFormElement>();
 	let suspendForm = $state<HTMLFormElement>();
 	let deleteForm = $state<HTMLFormElement>();
-	// The rich field the format bar acts on. Focus on the bar itself keeps it.
+	// The rich field the format bar acts on. Focus in the footer, on the bar or Save, keeps it,
+	// so the bar and its panels never shift under a click there.
 	let field = $state<HTMLElement | null>(null);
 
 	function onfocusin(e: FocusEvent) {
 		const t = e.target as Element;
-		if (!t.closest('[data-format-bar]')) field = t.closest<HTMLElement>('[data-rich-field]');
+		if (!t.closest('[data-editor-footer]')) field = t.closest<HTMLElement>('[data-rich-field]');
 	}
 
 	function onfocusout(e: FocusEvent) {
@@ -360,6 +361,7 @@
 		{/if}
 
 		<div
+			data-editor-footer
 			class="border-line bg-bg/90 lg:bg-surface/90 pb-safe sticky bottom-0 mt-auto flex flex-wrap items-center gap-2 border-t px-4 pt-3 backdrop-blur"
 		>
 			{#if tab === 'edit'}<FormatBar {field} />{/if}

@@ -369,7 +369,6 @@
 	menu and returns to the field, so it never reaches the card. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	data-format-bar
 	class="w-full space-y-2 {field ? '' : 'max-lg:hidden'}"
 	onmousedown={(e) => {
 		if (e.target !== linkInput) e.preventDefault();
