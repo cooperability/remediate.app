@@ -15,6 +15,8 @@
 	let url = $state('');
 	let linkInput = $state<HTMLInputElement>();
 	let toolbar = $state<HTMLElement>();
+	// The toolbar is one Tab stop: the button last focused in it.
+	let stop = $state('Text styles and indent');
 	// The field's selection while the link box has focus.
 	let saved: Range | null = null;
 
@@ -193,6 +195,26 @@
 		document.getElementById('format-styles')?.querySelector('button')?.focus();
 	}
 
+	// Arrows, Home and End move along the toolbar, as in any ARIA toolbar. The ends wrap.
+	function rove(e: KeyboardEvent) {
+		const all = [...(toolbar?.querySelectorAll('button') ?? [])];
+		const i = all.indexOf(document.activeElement as HTMLButtonElement);
+		const n = all.length;
+		const to =
+			e.key === 'Home'
+				? 0
+				: e.key === 'End'
+					? n - 1
+					: e.key === 'ArrowRight'
+						? (i + 1) % n
+						: e.key === 'ArrowLeft'
+							? (i + n - 1) % n
+							: -1;
+		if (i < 0 || to < 0) return;
+		e.preventDefault();
+		all[to].focus();
+	}
+
 	function style(tag: string) {
 		run('formatBlock', `<${tag}>`);
 		panel = null;
@@ -272,7 +294,7 @@
 							: mod && !e.shiftKey && k === 'k'
 								? openLink
 								: e.altKey && e.key === 'F10'
-									? () => toolbar?.querySelector('button')?.focus()
+									? () => toolbar?.querySelector<HTMLElement>('[tabindex="0"]')?.focus()
 									: null;
 		if (!act) return;
 		e.preventDefault();
@@ -437,14 +459,18 @@
 		bind:this={toolbar}
 		class="-mx-1 flex gap-1 overflow-x-auto px-1 max-lg:[scrollbar-width:none] lg:flex-wrap"
 		role="toolbar"
+		tabindex="-1"
 		aria-label="Formatting"
 		aria-controls={field?.id}
+		onkeydown={rove}
+		onfocusin={(e) => (stop = (e.target as Element).getAttribute('aria-label') ?? stop)}
 	>
 		<button
 			type="button"
 			class="btn min-h-11 min-w-11 shrink-0 px-2 py-1 text-sm lg:min-h-8 lg:min-w-8"
 			title="Text styles and indent"
 			aria-label="Text styles and indent"
+			tabindex={stop === 'Text styles and indent' ? 0 : -1}
 			aria-expanded={panel === 'styles'}
 			aria-controls={panel === 'styles' ? 'format-styles' : undefined}
 			class:!bg-accent-soft={panel === 'styles'}
@@ -462,6 +488,7 @@
 					class:!bg-accent-soft={pressed(t.key)}
 					title={t.title}
 					aria-label={t.title}
+					tabindex={stop === t.title ? 0 : -1}
 					aria-pressed={pressed(t.key)}
 					disabled={!field}
 					onclick={t.on}>{t.label}</button

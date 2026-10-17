@@ -380,9 +380,17 @@ test.describe('card editor', () => {
 		await page.keyboard.press('ControlOrMeta+a');
 		await page.keyboard.press('Alt+F10');
 		await expect(page.getByRole('button', { name: 'Text styles and indent' })).toBeFocused();
-		await page.keyboard.press('Tab');
-		await page.keyboard.press('Tab');
-		await page.keyboard.press('Tab');
+		// A toolbar is one Tab stop. Arrows, Home and End move inside it, and the ends wrap.
+		await expect(bar.locator('button[tabindex="0"]')).toHaveCount(1);
+		await page.keyboard.press('End');
+		await expect(tool('Clear formatting')).toBeFocused();
+		await page.keyboard.press('ArrowRight');
+		await expect(page.getByRole('button', { name: 'Text styles and indent' })).toBeFocused();
+		await page.keyboard.press('ArrowLeft');
+		await page.keyboard.press('Home');
+		await page.keyboard.press('ArrowRight');
+		await page.keyboard.press('ArrowRight');
+		await page.keyboard.press('ArrowRight');
 		await expect(tool('Bold (Ctrl+B)')).toBeFocused();
 		await page.keyboard.press('Enter');
 		await expect(front.locator('b, strong')).toHaveText('alpha');
