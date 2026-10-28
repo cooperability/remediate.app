@@ -54,7 +54,7 @@
 		"vitest": "5.0.5"
 	},
 	"dependencies": {
-		"@lucide/svelte": "1.57.0",
+		"@lucide/svelte": "1.61.0",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"csv-parse": "7.0.3",
