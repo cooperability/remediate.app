@@ -136,7 +136,20 @@ Days, streaks, and the daily new-card cap follow the browser's time zone, which 
 
 ## Deploy
 
-The Vercel Git integration owns every deploy. It builds production on `main` and a preview on each pull request. There is no second deploy path. GitHub Actions runs lint, typecheck, migrations from empty with a schema-drift check, `yarn test:server`, a build, and `yarn test:e2e` on Node 22 against a Postgres service, and deploys nothing.
+GitHub Actions owns production. `.github/workflows/verify.yml` runs lint, typecheck, migrations from empty with a schema-drift check, `yarn test:server`, a build, and `yarn test:e2e` on Node 22 against a Postgres service. When it passes on `main`, `.github/workflows/deploy.yml` builds with the Vercel CLI, runs `yarn db:migrate` against production, deploys the prebuilt output, and fails unless `/api/health` reports `status: "ok"` within 3 minutes. The old deployment answers that check too, so a pass proves the database is reachable, not that the new build is serving. Building comes first, so a broken build never touches the database. One deploy runs at a time, because drizzle's migrator takes no lock. A verified commit that is no longer the tip of `main` is skipped. The newer commit deploys only if its own Verify passes.
+
+Migrations run before the new code goes live, and the old code keeps serving if the deploy step fails. Every migration must work with the code already in production: add columns and tables first, and drop or rename them in a later deploy.
+
+The Vercel Git integration still builds a preview on each pull request. `vercel.json` sets `git.deploymentEnabled.main` to `false`, so it no longer deploys `main`.
+
+The deploy job reads these secrets from the GitHub `production` environment:
+
+| Secret                  | Value                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `VERCEL_TOKEN`          | A Vercel access token with deploy rights on the project.                                 |
+| `VERCEL_ORG_ID`         | `orgId` from `.vercel/project.json` after `vercel link`.                                 |
+| `VERCEL_PROJECT_ID`     | `projectId` from `.vercel/project.json` after `vercel link`.                             |
+| `DATABASE_URL_UNPOOLED` | The production Neon URL without the pooler, as Vercel's `STORAGE_DATABASE_URL_UNPOOLED`. |
 
 Root Directory must be `.`. On 2026-09-16 project `prj_RnBD1bE2cYV61qnpATWrMV0qUnJI` still read `frontend`, and every build aborted before install. Probable fixed since: Vercel preview deployments now pass on open pull requests, and production served signed-in pages after [#345](https://github.com/cooperability/remediate.app/pull/345). Root Directory is a dashboard setting, and `vercel.json` cannot override it. The other settings are Node.js 22.x, framework preset SvelteKit, `yarn install`, `yarn build`.
 
