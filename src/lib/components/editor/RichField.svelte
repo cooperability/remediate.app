@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { sanitizeCardHtml } from '$lib/cards/sanitize';
 
 	let {
@@ -20,7 +20,6 @@
 
 	let el = $state<HTMLDivElement>();
 	let source = $state(false);
-	let active = $state<Record<string, boolean>>({});
 
 	// Typing writes innerHTML into value, so they only differ when value was set
 	// from outside (a revert, the source view): then the DOM follows.
@@ -33,52 +32,18 @@
 	onMount(() => {
 		// Tags, not inline styles: the sanitizer drops style attributes, and with them the formatting.
 		document.execCommand('styleWithCSS', false, 'false');
-		const track = () => {
-			if (!el || !el.contains(document.getSelection()?.anchorNode ?? null)) return;
-			active = Object.fromEntries(STATEFUL.map((c) => [c, document.queryCommandState(c)] as const));
-		};
-		document.addEventListener('selectionchange', track);
-		return () => document.removeEventListener('selectionchange', track);
 	});
-
-	const STATEFUL = [
-		'bold',
-		'italic',
-		'underline',
-		'superscript',
-		'subscript',
-		'insertUnorderedList',
-		'insertOrderedList'
-	];
-
-	const escapeHtml = (s: string) =>
-		s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 	function sync() {
 		if (el) value = el.innerHTML;
 	}
 
-	function run(cmd: string, arg?: string) {
-		el?.focus();
-		document.execCommand(cmd, false, arg);
-		sync();
-	}
-
-	function code() {
-		const sel = document.getSelection();
-		const text = sel && el?.contains(sel.anchorNode) ? sel.toString() : '';
-		if (text) run('insertHTML', `<code>${escapeHtml(text)}</code>`);
-	}
-
-	function link() {
-		const url = prompt('Link to (https:// or mailto:)', 'https://');
-		// The sanitizer keeps these schemes only, so anything else would save as plain text.
-		if (url && /^(https?:|mailto:)/i.test(url.trim())) run('createLink', url.trim());
-	}
-
-	function toggleSource() {
+	async function toggleSource() {
 		if (source) value = sanitizeCardHtml(value);
 		source = !source;
+		// The view that had focus is gone. The one that replaced it takes it, so the format bar follows.
+		await tick();
+		document.getElementById(id)?.focus();
 	}
 
 	// Pasted HTML goes through the same sanitizer as a save, so the field never
@@ -87,70 +52,17 @@
 		const html = e.clipboardData?.getData('text/html');
 		const text = e.clipboardData?.getData('text/plain') ?? '';
 		e.preventDefault();
-		if (html) run('insertHTML', sanitizeCardHtml(html));
-		else run('insertText', text);
+		if (html) document.execCommand('insertHTML', false, sanitizeCardHtml(html));
+		else document.execCommand('insertText', false, text);
+		sync();
 	}
 
-	// Anki's field shortcuts. Ctrl+B, I and U are the browser's own.
+	// The formatting shortcuts live on the format bar. This one works in the source view too.
 	function onkeydown(e: KeyboardEvent) {
-		const mod = e.ctrlKey || e.metaKey;
-		if (!mod) return;
-		const k = e.key.toLowerCase();
-		const act =
-			e.shiftKey && k === 'x'
-				? toggleSource
-				: e.shiftKey && (k === '+' || k === '=')
-					? () => run('superscript')
-					: !e.shiftKey && k === '='
-						? () => run('subscript')
-						: !e.shiftKey && k === 'k'
-							? link
-							: null;
-		if (!act) return;
+		if (!(e.ctrlKey || e.metaKey) || !e.shiftKey || e.key.toLowerCase() !== 'x') return;
 		e.preventDefault();
-		act();
+		toggleSource();
 	}
-
-	type Tool = { label: string; title: string; on: () => void; cmd?: string; cls?: string };
-	const TOOLS: Tool[] = [
-		{ label: 'B', title: 'Bold (Ctrl+B)', on: () => run('bold'), cmd: 'bold', cls: 'font-bold' },
-		{
-			label: 'I',
-			title: 'Italic (Ctrl+I)',
-			on: () => run('italic'),
-			cmd: 'italic',
-			cls: 'italic'
-		},
-		{
-			label: 'U',
-			title: 'Underline (Ctrl+U)',
-			on: () => run('underline'),
-			cmd: 'underline',
-			cls: 'underline'
-		},
-		{
-			label: 'x²',
-			title: 'Superscript (Ctrl+Shift+=)',
-			on: () => run('superscript'),
-			cmd: 'superscript'
-		},
-		{ label: 'x₂', title: 'Subscript (Ctrl+=)', on: () => run('subscript'), cmd: 'subscript' },
-		{ label: '</>', title: 'Inline code', on: code, cls: 'font-mono text-[11px]' },
-		{
-			label: '•',
-			title: 'Bulleted list',
-			on: () => run('insertUnorderedList'),
-			cmd: 'insertUnorderedList'
-		},
-		{
-			label: '1.',
-			title: 'Numbered list',
-			on: () => run('insertOrderedList'),
-			cmd: 'insertOrderedList'
-		},
-		{ label: '↗', title: 'Link (Ctrl+K)', on: link },
-		{ label: 'T̸', title: 'Clear formatting', on: () => run('removeFormat') }
-	];
 </script>
 
 <div>
@@ -168,27 +80,13 @@
 	</div>
 
 	{#if !source}
-		<!-- mousedown would move focus off the field and drop its selection before the command runs. -->
-		<div class="mt-1 flex flex-wrap gap-1" role="toolbar" aria-label="{label} formatting">
-			{#each TOOLS as t (t.title)}
-				<button
-					type="button"
-					class="btn min-h-11 min-w-11 px-2 py-1 text-sm lg:min-h-8 lg:min-w-8 {t.cls ?? ''}"
-					class:!bg-accent-soft={t.cmd && active[t.cmd]}
-					title={t.title}
-					aria-label={t.title}
-					aria-pressed={t.cmd ? Boolean(active[t.cmd]) : undefined}
-					onmousedown={(e) => e.preventDefault()}
-					onclick={t.on}>{t.label}</button
-				>
-			{/each}
-		</div>
 		<div
 			bind:this={el}
 			{id}
 			class="field card-html prose prose-sm dark:prose-invert input mt-2 max-w-none px-3 py-2"
 			class:!border-again={invalid}
 			contenteditable="true"
+			data-rich-field
 			role="textbox"
 			tabindex="0"
 			aria-multiline="true"
@@ -215,10 +113,15 @@
 <style>
 	.field {
 		min-height: 6rem;
-		max-height: 50vh;
-		overflow-y: auto;
 		overflow-wrap: anywhere;
 		color: var(--fg);
+	}
+	/* On a phone the field grows and the sheet scrolls, as in Notes: a scroller inside a scroller fights the keyboard. */
+	@media (min-width: 64rem) {
+		.field {
+			max-height: 50vh;
+			overflow-y: auto;
+		}
 	}
 	.field:focus {
 		outline: none;

@@ -473,7 +473,7 @@
 				<p class="font-semibold">Pick a card to edit it</p>
 				<p class="text-muted mt-1 text-sm">Or add one. The editor opens here.</p>
 				<dl class="mt-6 grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-					{#each [['N', 'New card'], ['/', 'Search'], ['J K', 'Next, previous card'], ['Ctrl ↵', 'Save'], ['Esc', 'Close the editor'], ['Ctrl ⇧ P', 'Preview'], ['Ctrl ⇧ X', 'HTML source of a field'], ['Ctrl J', 'Suspend'], ['Ctrl Del', 'Delete']] as [k, v] (k)}
+					{#each [['N', 'New card'], ['/', 'Search'], ['J K', 'Next, previous card'], ['Ctrl ↵', 'Save'], ['Esc', 'Close the editor'], ['Ctrl ⇧ P', 'Preview'], ['Ctrl ⇧ X', 'HTML source of a field'], ['Tab ⇧ Tab', 'Nest, un-nest a list item'], ['Alt F10', 'Into the formatting bar'], ['Ctrl J', 'Suspend'], ['Ctrl Del', 'Delete']] as [k, v] (k)}
 						<dt><span class="kbd">{k}</span></dt>
 						<dd class="text-muted">{v}</dd>
 					{/each}

@@ -202,3 +202,14 @@
 		transition-duration: 0.01ms !important;
 	}
 }
+
+/* Card HTML from the editor. Unlayered, so it wins over the prose plugin's list markers. */
+.card-html ul.dashed {
+	list-style-type: '\2013\00a0';
+}
+.card-html mark {
+	background: color-mix(in srgb, var(--hard) 35%, transparent);
+	color: inherit;
+	border-radius: 0.2em;
+	padding-inline: 0.1em;
+}
