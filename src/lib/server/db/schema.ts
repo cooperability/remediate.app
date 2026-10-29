@@ -22,7 +22,9 @@ export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	// Login is an allowlisted address plus the shared DEV_PASSWORD.
 	email: text('email').notNull().unique(),
-	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	// Set only on a signed-out demo user (guest.ts). The guest and all its rows go after this.
+	guestExpiresAt: timestamp('guest_expires_at', { withTimezone: true, mode: 'date' })
 });
 
 export const session = pgTable('session', {
@@ -52,6 +54,13 @@ export const loginThrottle = pgTable('login_throttle', {
 	windowStart: timestamp('window_start', { withTimezone: true, mode: 'date' }).notNull(),
 	sends: integer('sends').notNull().default(0),
 	failures: integer('failures').notNull().default(0)
+});
+
+/** Demo guests started per hashed client address in a fixed window. See guest.ts. */
+export const guestThrottle = pgTable('guest_throttle', {
+	ipHash: text('ip_hash').primaryKey(),
+	windowStart: timestamp('window_start', { withTimezone: true, mode: 'date' }).notNull(),
+	starts: integer('starts').notNull().default(0)
 });
 
 /**

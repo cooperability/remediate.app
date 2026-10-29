@@ -20,6 +20,7 @@ export const load: PageServerLoad = async ({ cookies, locals, url }) => {
 
 export const actions: Actions = {
 	import: async ({ request, locals }) => {
+		if (locals.user!.guestExpiresAt) return fail(403, { message: 'Log in to import decks.' });
 		const file = (await request.formData()).get('file');
 		if (!(file instanceof File) || file.size === 0) {
 			return fail(400, { message: 'Choose an Anki .txt export.' });

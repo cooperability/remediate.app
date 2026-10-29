@@ -50,6 +50,13 @@
 			"when": 1791789655299,
 			"tag": "0006_card_editor",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1793229899842,
+			"tag": "0007_guest_demo",
+			"breakpoints": true
 		}
 	]
 }

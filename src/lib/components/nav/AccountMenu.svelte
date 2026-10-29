@@ -5,7 +5,8 @@
 	import Link from '@lucide/svelte/icons/link';
 	import LogOut from '@lucide/svelte/icons/log-out';
 
-	let { email }: { email: string } = $props();
+	let { email, guest = false }: { email: string; guest?: boolean } = $props();
+	const label = $derived(guest ? 'Demo guest' : email);
 
 	let root: HTMLDetailsElement | undefined = $state();
 	// Not on enter: that is hydration, and a menu opened before it must stay open.
@@ -33,15 +34,17 @@
 	<summary
 		class="btn btn-ghost text-muted hover:text-fg size-11 list-none p-0 [&::-webkit-details-marker]:hidden"
 		aria-label="Account"
-		title={email}
+		title={label}
 	>
 		<CircleUserRound class="size-5" />
 	</summary>
 	<div class="panel absolute right-0 z-30 mt-2 w-64 p-1.5 shadow-xl">
-		<p class="text-muted truncate px-3 pt-2 pb-2.5 font-mono text-xs">{email}</p>
-		<a href={resolve('/harvest')} class="item">
-			<Link class="size-4" /> Harvest links
-		</a>
+		<p class="text-muted truncate px-3 pt-2 pb-2.5 font-mono text-xs">{label}</p>
+		{#if !guest}
+			<a href={resolve('/harvest')} class="item">
+				<Link class="size-4" /> Harvest links
+			</a>
+		{/if}
 		<form method="POST" action="/login?/logout">
 			<button class="item w-full">
 				<LogOut class="size-4" /> Log out

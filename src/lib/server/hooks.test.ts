@@ -20,12 +20,16 @@ vi.mock('$lib/server/auth', () => ({
 	deleteSessionTokenCookie: vi.fn()
 }));
 
+// Read when the hook's modules load, below.
+process.env.ALLOWED_EMAILS = 'me@test.invalid';
 const auth = await import('$lib/server/auth');
 const { handle } = await import('../../hooks.server');
 
-function event(path: string, method = 'GET') {
+/** `route` is the id SvelteKit matched, which a percent-encoded path can hide from `url`. */
+function event(path: string, method = 'GET', route: string | null = null) {
 	return {
 		url: new URL(`http://localhost${path}`),
+		route: { id: route },
 		request: new Request(`http://localhost${path}`, { method }),
 		cookies: {
 			get: (name: string) => (name === 'auth-session' ? 'stale-token' : undefined),
@@ -112,5 +116,73 @@ describe('auth hook when the session lookup throws', () => {
 			'Failed query'
 		);
 		expect(resolve).not.toHaveBeenCalled();
+	});
+});
+
+describe('auth hook for a demo guest', () => {
+	const guestExpiresAt = new Date(Date.now() + 60_000);
+	const lookup = {
+		user: { id: 'g1', email: 'guest-g1@guest.invalid', guestExpiresAt },
+		session: { id: 's1', userId: 'g1', expiresAt: guestExpiresAt }
+	};
+	beforeEach(async () => {
+		vi.clearAllMocks();
+		vi.mocked(auth.validateSessionToken).mockResolvedValueOnce(lookup);
+		const { asTenant } = await import('$lib/server/db');
+		vi.mocked(asTenant).mockImplementationOnce(async (_id, fn) => fn());
+	});
+
+	// No allowlist names a guest address: the allowlist check must not sign it out.
+	it('keeps the guest signed in on app pages', async () => {
+		const e = event('/cards');
+		const res = await handle({ event: e, resolve: async () => new Response('page') });
+		expect(await res.text()).toBe('page');
+		expect(e.locals.user).toEqual(lookup.user);
+		expect(auth.invalidateSession).not.toHaveBeenCalled();
+	});
+
+	it('sends the guest from harvest back to the decks, however the path is spelled', async () => {
+		// beforeEach queued the first lookup.
+		vi.mocked(auth.validateSessionToken).mockResolvedValueOnce(lookup);
+		for (const path of ['/harvest', '/%68arvest?/queue']) {
+			await expect(
+				handle({
+					event: event(path, 'GET', '/harvest'),
+					resolve: async () => new Response('page')
+				}),
+				path
+			).rejects.toMatchObject({ status: 303, location: '/cards' });
+		}
+	});
+});
+
+describe('auth hook for a real user', () => {
+	const expiresAt = new Date(Date.now() + 60_000);
+	const as = (email: string) => ({
+		user: { id: 'u1', email, guestExpiresAt: null },
+		session: { id: 's1', userId: 'u1', expiresAt }
+	});
+	beforeEach(async () => {
+		vi.clearAllMocks();
+		const { asTenant } = await import('$lib/server/db');
+		vi.mocked(asTenant).mockImplementationOnce(async (_id, fn) => fn());
+	});
+
+	it('reaches harvest when allowlisted', async () => {
+		vi.mocked(auth.validateSessionToken).mockResolvedValueOnce(as('me@test.invalid'));
+		const res = await handle({
+			event: event('/harvest', 'GET', '/harvest'),
+			resolve: async () => new Response('page')
+		});
+		expect(await res.text()).toBe('page');
+		expect(auth.invalidateSession).not.toHaveBeenCalled();
+	});
+
+	it('is signed out once dropped from the allowlist', async () => {
+		vi.mocked(auth.validateSessionToken).mockResolvedValueOnce(as('gone@test.invalid'));
+		await expect(
+			handle({ event: event('/cards'), resolve: async () => new Response('page') })
+		).rejects.toMatchObject({ status: 303, location: '/login' });
+		expect(auth.invalidateSession).toHaveBeenCalledWith('s1');
 	});
 });
