@@ -75,10 +75,16 @@
 				</ul>
 				<div class="flex items-center gap-1 sm:ml-auto sm:gap-2">
 					<ThemeToggle theme={data.theme} />
-					<AccountMenu email={data.user.email} />
+					<AccountMenu email={data.user.email} guest={data.user.guest} />
 				</div>
 			</div>
 		</nav>
+		{#if data.user.guest}
+			<p class="border-line bg-accent-soft border-b px-4 py-2 text-center text-sm">
+				Demo with two AI-made decks. Progress is wiped within 24 hours.
+				<a href={resolve('/login')} class="text-accent font-medium underline">Log in</a>
+			</p>
+		{/if}
 	{:else if !data.user && !focus}
 		<div
 			class="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-20"

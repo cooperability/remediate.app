@@ -15,13 +15,13 @@ export function generateSessionToken() {
 	return token;
 }
 
-export async function createSession(token: string, userId: string) {
+export async function createSession(
+	token: string,
+	userId: string,
+	expiresAt = new Date(Date.now() + DAY_IN_MS * 30)
+) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const session: table.Session = {
-		id: sessionId,
-		userId,
-		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
-	};
+	const session: table.Session = { id: sessionId, userId, expiresAt };
 	await db.insert(table.session).values(session);
 	return session;
 }
@@ -31,7 +31,11 @@ export async function validateSessionToken(token: string) {
 	const [result] = await db
 		.select({
 			// Adjust user table here to tweak returned data
-			user: { id: table.user.id, email: table.user.email },
+			user: {
+				id: table.user.id,
+				email: table.user.email,
+				guestExpiresAt: table.user.guestExpiresAt
+			},
 			session: table.session
 		})
 		.from(table.session)
@@ -49,7 +53,9 @@ export async function validateSessionToken(token: string) {
 		return { session: null, user: null };
 	}
 
-	const renewSession = Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15;
+	// A guest's session ends with the guest, so renewing it would outlive its rows.
+	const renewSession =
+		!user.guestExpiresAt && Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15;
 	if (renewSession) {
 		session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
 		await db
