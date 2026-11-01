@@ -642,6 +642,11 @@
   dependencies:
     "@tybys/wasm-util" "^0.10.3"
 
+"@open-spaced-repetition/srs-kit@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@open-spaced-repetition/srs-kit/-/srs-kit-1.0.0.tgz#d8f91b7d5b7c183f8927f5cf9125bcbb21d4d470"
+  integrity sha512-f++JAMpRw7Yh1U4JcHzTtVknJ1bYKz/4yejsus6TRl+ueGJpvexNBrOoqaeUWCgH/e1j046oiqjzy4Nf4RW/vw==
+
 "@oslojs/asn1@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@oslojs/asn1/-/asn1-1.0.0.tgz#25edb31585b369efdc103e9a1eb822df9c235174"
@@ -2528,10 +2533,12 @@ ts-api-utils@^2.5.0:
   resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.5.0.tgz#4acd4a155e22734990a5ed1fe9e97f113bcb37c1"
   integrity sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==
 
-ts-fsrs@5.4.2:
-  version "5.4.2"
-  resolved "https://registry.yarnpkg.com/ts-fsrs/-/ts-fsrs-5.4.2.tgz#7bd23da3d8a35368b813f4064eabe829a46f9901"
-  integrity sha512-z4qop4pzTcyTzuJ566d9EaX/4bZZzhYfeaPImfVr+xcYT65c5oBgFDijUhCE/D+C78eaolHIhKRZ04/RwF+v2g==
+ts-fsrs@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/ts-fsrs/-/ts-fsrs-6.0.0.tgz#900b2ff1b375cbebab098001b3c54dcaf9be4f5b"
+  integrity sha512-kX03GIEhXgBtUrgZuv7k7Aax8oYF3GCO0lASqJFw/8cvvI7qjE83J8IzFhHugux7//W0yquG7zidk3e9NRgEwg==
+  dependencies:
+    "@open-spaced-repetition/srs-kit" "1.0.0"
 
 tslib@^2.4.0, tslib@^2.8.1:
   version "2.8.1"
