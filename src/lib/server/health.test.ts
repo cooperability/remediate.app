@@ -51,6 +51,13 @@ describe('schemaStatus', () => {
 		expect(await schemaStatus()).toBe('behind');
 	});
 
+	// A deploy that migrates before going live, or a Vercel rollback, serves a build
+	// older than its database. That build is still correct.
+	it('is current when the database is ahead of this build', async () => {
+		execute.mockResolvedValue([{ applied: String(LATEST_MIGRATION + 1) }]);
+		expect(await schemaStatus()).toBe('current');
+	});
+
 	it('is behind when no migration has been applied', async () => {
 		execute.mockResolvedValue([{ applied: null }]);
 		expect(await schemaStatus()).toBe('behind');
