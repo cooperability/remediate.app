@@ -5,7 +5,7 @@ import { asTenant } from '$lib/server/db';
 import { isAllowed } from '$lib/server/otp';
 import { toTheme } from '$lib/theme';
 
-const PUBLIC = ['/', '/login', '/api/health', '/theme'];
+const PUBLIC = ['/', '/login', '/demo', '/api/health', '/theme'];
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const token = event.cookies.get(auth.sessionCookieName);
@@ -32,7 +32,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (token && lookup) {
 		let { session, user } = lookup;
 		// Dropping an address from ALLOWED_EMAILS ends its sessions on the next request.
-		if (session && user && !isAllowed(user.email)) {
+		// A demo guest has no address to allow: its session ends at guestExpiresAt.
+		if (session && user && !user.guestExpiresAt && !isAllowed(user.email)) {
 			await auth.invalidateSession(session.id);
 			session = null;
 			user = null;
@@ -53,6 +54,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 			return json({ message: 'Log in again.' }, { status: 401 });
 		}
 		redirect(303, '/login');
+	}
+	// Harvest fetches arbitrary URLs from the server: not for anonymous visitors. The
+	// matched route, not the raw path: /%68arvest routes to /harvest too.
+	if (event.locals.user?.guestExpiresAt && event.route.id?.startsWith('/harvest')) {
+		redirect(303, '/cards');
 	}
 
 	// Rendered server-side so the first paint is right: the CSP forbids an inline script.
