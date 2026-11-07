@@ -617,10 +617,10 @@
   resolved "https://registry.yarnpkg.com/@keyv/serialize/-/serialize-1.1.1.tgz#0c01dd3a3483882af7cf3878d4e71d505c81fc4a"
   integrity sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==
 
-"@lucide/svelte@1.63.0":
-  version "1.63.0"
-  resolved "https://registry.yarnpkg.com/@lucide/svelte/-/svelte-1.63.0.tgz#8b642867c9616519989cf1cf1053050f6c372468"
-  integrity sha512-eAhbnjLMmbF7Xf6VMECERIKi8f0vDlDgMnNUcZgJKRclS2yjZel6XRaPlfFRvAvbGfVFrOchILEuCB/vTaz8PA==
+"@lucide/svelte@1.67.0":
+  version "1.67.0"
+  resolved "https://registry.yarnpkg.com/@lucide/svelte/-/svelte-1.67.0.tgz#62d61efb57e442aaa630a066a92ec8c2491fc7ee"
+  integrity sha512-DeqoOkMm3QihcNsrQB5drR/8azWDGuozfagDpm/anIqaJdflLUMhwLFPEANl/W3FLhXx6HmQwEWz7zBtZ6KXcQ==
 
 "@mapbox/node-pre-gyp@^2.0.0":
   version "2.0.3"
