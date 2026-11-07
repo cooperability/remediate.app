@@ -1,0 +1,102 @@
+name: Deploy
+
+# The only production deploy path. vercel.json turns off Git deploys for main.
+# Previews still come from the Vercel Git integration.
+on:
+  workflow_run:
+    workflows: [Verify]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # Verify runs finish out of order. Deploying an older SHA after a newer one
+  # would roll production code back behind the schema.
+  tip:
+    name: Check the verified SHA is still main
+    # head_branch alone matches a fork pull request whose branch is named main.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      current: ${{ steps.compare.outputs.current }}
+    steps:
+      - id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tip=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$tip" = "$SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$SHA is no longer the tip of main ($tip). The newer commit deploys instead."
+          fi
+
+  deploy:
+    name: Migrate and deploy production
+    needs: tip
+    if: needs.tip.outputs.current == 'true'
+    # drizzle's migrator takes no lock, so this group is what keeps two migrations
+    # apart. It sits on this job so a filtered-out run never replaces a pending one.
+    concurrency:
+      group: prod-deploy
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: 'yarn.lock'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@65.2.0
+
+      - name: Pull Vercel production settings
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      # Build before migrating, so a broken build never touches the database.
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Migrate production database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_UNPOOLED }}
+        run: yarn db:migrate
+
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Wait for a healthy production
+        run: |
+          while [ "$SECONDS" -lt 180 ]; do
+            status=$(curl -s --max-time 5 https://www.remediate.app/api/health | jq -r .status 2>/dev/null || true)
+            [ "$status" = "ok" ] && exit 0
+            sleep 5
+          done
+          echo "::error::/api/health did not report status ok within 3 minutes (last: ${status:-no response})"
+          exit 1
