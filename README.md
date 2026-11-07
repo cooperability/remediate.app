@@ -151,6 +151,8 @@ The deploy job reads these secrets from the GitHub `production` environment:
 | `VERCEL_PROJECT_ID`     | `projectId` from `.vercel/project.json` after `vercel link`.                             |
 | `DATABASE_URL_UNPOOLED` | The production Neon URL without the pooler, as Vercel's `STORAGE_DATABASE_URL_UNPOOLED`. |
 
+Limit the `production` environment to the `main` branch. Without that deployment branch rule, a workflow on any branch of this repository can name the environment and read these secrets. ROADMAP OPS-1 tracks both steps.
+
 Root Directory must be `.`. On 2026-09-16 project `prj_RnBD1bE2cYV61qnpATWrMV0qUnJI` still read `frontend`, and every build aborted before install. Probable fixed since: Vercel preview deployments now pass on open pull requests, and production served signed-in pages after [#345](https://github.com/cooperability/remediate.app/pull/345). Root Directory is a dashboard setting, and `vercel.json` cannot override it. The other settings are Node.js 22.x, framework preset SvelteKit, `yarn install`, `yarn build`.
 
 ## Configuration
