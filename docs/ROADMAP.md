@@ -104,9 +104,9 @@ Size is scope, not time: **S** touches one module and its test, **M** touches a 
 ### SEC-B: Narrow the tenant role's grants
 
 - **Type** bug, security (defence in depth) · **Size** S · **Depends** none · **Evidence** Confirmed by reading the migration.
-- **Why.** Migration `0003_rls` grants `remediate_app` full DML on every table, `user` and `session` included, and on every future table through default privileges. Only the eight tables with `user_id` get policies. Inside `asTenant`, any query can read every user's email or delete every session. A future table with `user_id` and no policy is cross-tenant from its first migration, and no test catches it. There is no injection sink today, so this is a second wall with a gap, not an open hole.
+- **Why.** Migration `0003_rls` grants `remediate_app` full DML on every table, `user` and `session` included, and on every future table through default privileges. Only the eight tables with `user_id` get policies. Inside `asTenant`, any query can read every user's email or delete every session. A future table with `user_id` and no policy is cross-tenant from its first migration, and no test catches it. There is no injection sink today, so this is a second wall with a gap, not an open hole. Since the guest demo ([#389](https://github.com/cooperability/remediate.app/pull/389)), anonymous visitors run as tenants too, so this wall now faces the least trusted users.
 - **Where.** `drizzle/0003_rls.sql:16-52`, `src/lib/server/db/rls.db.test.ts`, logout at `src/routes/login/+page.server.ts:34-38`.
-- **Do.** A new migration revokes `remediate_app` on `user`, `session`, `login_code`, `login_throttle`. Session lookup already runs before `asTenant` in `hooks.server.ts`. Logout runs inside it, so give logout's `invalidateSession` a path on the root connection (`root` in `db/index.ts` is not exported today). Add a catalog test: every public table with a `user_id` column has `relrowsecurity` and a policy.
+- **Do.** A new migration revokes `remediate_app` on `user`, `session`, `login_code`, `login_throttle`, `guest_throttle`. Session lookup already runs before `asTenant` in `hooks.server.ts`. Logout runs inside it, so give logout's `invalidateSession` a path on the root connection (`root` in `db/index.ts` is not exported today). Add a catalog test: every public table with a `user_id` column has `relrowsecurity` and a policy.
 - **Acceptance.** The catalog test fails if a policy is dropped. A test that runs `select email from "user"` under `asTenant` is refused.
 
 ### DATA-D: Take the Quest lock in `deleteDeck`
@@ -353,7 +353,7 @@ For each line below, deleting it fails no test. Each needs a test that does.
 
 - **Type** cleanup · **Size** S · **Depends** none. The `vector(1024)` part depends on AI-B.
 - **Why.** Dead config misleads the next agent into building against it.
-- **Do.** A migration drops `login_code` and `jobs`, and the unused `sends` column of `login_throttle` (SEC-A counts failures in that table, so the table stays). Delete `INTERNAL_TOKEN` from `.env.example`. Rename `src/lib/server/otp.ts`, which holds no one-time-password code since [#330](https://github.com/cooperability/remediate.app/pull/330). Drop the `vector(1024)` column only if AI-B decides against embeddings.
+- **Do.** A migration drops `login_code` and `jobs`, and the unused `sends` column of `login_throttle` (SEC-A counts failures in that table, so the table stays). Delete `INTERNAL_TOKEN` from `.env.example`. Rename `src/lib/server/otp.ts`, which holds no one-time-password code since [#330](https://github.com/cooperability/remediate.app/pull/330). Drop the `vector(1024)` column only if AI-B decides against embeddings. Dropping `jobs` also removes `table.job` from `OWNED` in `src/lib/server/guest.ts` and `jobs` from `TABLES` in `e2e/guest.test.ts`, and the `table.job` insert from `src/lib/server/guest.db.test.ts`.
 - **Acceptance.** `yarn db:generate` is clean after the migration, and `grep -r INTERNAL_TOKEN` finds only history.
 
 ## Deferred and cut

@@ -24,6 +24,15 @@ test.describe('demo guest', () => {
 
 	const sql = url ? postgres(url, { onnotice: () => {} }) : null!;
 
+	// guest.ts purges its own list. This one must also reach every table a guest can
+	// own, or a test run leaves rows behind. From the catalog, so a new table fails here.
+	test('cleanup covers every table with a user_id column', async () => {
+		const rows = await sql<{ table_name: string }[]>`
+			select table_name from information_schema.columns
+			where table_schema = 'public' and column_name = 'user_id'`;
+		expect(rows.map((r) => r.table_name).sort()).toEqual([...TABLES].sort());
+	});
+
 	async function cleanup() {
 		const guests = sql`select id from "user" where guest_expires_at is not null`;
 		for (const t of TABLES) await sql`delete from ${sql(t)} where user_id in (${guests})`;
