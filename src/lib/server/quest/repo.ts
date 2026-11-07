@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { newLeftByDeck } from '$lib/server/cards/budget';
 import { plainText } from '$lib/server/cards/browse';
-import { writeReview, type Tx } from '$lib/server/cards/review';
+import { reviewAfterLock, writeReview, type Tx } from '$lib/server/cards/review';
 import { retrievability } from '$lib/server/cards/scheduler';
 import { NEW_PER_DAY } from '$lib/server/cards/select';
 import {
@@ -549,15 +549,15 @@ export async function gradeEncounter(
 
 			// Lock the card, as Cards does, and judge the door on its state under the lock.
 			const [card] = await tx
-				.select({ id: table.node.id, review: table.reviewState })
+				.select({ id: table.node.id })
 				.from(table.node)
-				.leftJoin(table.reviewState, eq(table.reviewState.nodeId, table.node.id))
 				.where(
 					and(eq(table.node.id, nodeId), eq(table.node.userId, userId), eq(table.node.kind, 'card'))
 				)
-				.for('update', { of: table.node });
+				.for('update');
 			if (!card) return null;
-			const before = card.review ? memoryOf(card.review, now) : undefined;
+			const prior = await reviewAfterLock(tx, nodeId);
+			const before = prior ? memoryOf(prior, now) : undefined;
 			if (before) ctx.memory.set(nodeId, before);
 			else ctx.memory.delete(nodeId);
 			forget(ctx);
@@ -576,7 +576,7 @@ export async function gradeEncounter(
 			const next = await writeReview(tx, {
 				userId,
 				nodeId,
-				review: card.review,
+				review: prior,
 				rating,
 				now,
 				surface: 'quest',

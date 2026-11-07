@@ -1,5 +1,5 @@
 import { hasDb } from '../testing/db';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import * as table from '../db/schema';
 import { DOOR_THRESHOLD } from '$lib/quest/types';
@@ -634,6 +634,104 @@ describe.skipIf(!hasDb)('Quest against the database', () => {
 				Array.from({ length: 12 }, () => quest.questView(userId, at(0)))
 			);
 			expect(views.every((v) => v?.room)).toBe(true);
+		}, 20_000);
+	});
+
+	describe('one card graded from Cards and Quest at once', () => {
+		/**
+		 * Runs `first` as the tenant and holds its transaction open until `second`,
+		 * in its own tenant transaction, waits on a lock `first` holds. Then commits.
+		 * Forced, so the test cannot pass by timing luck.
+		 */
+		async function whileHeld<A, B>(first: () => Promise<A>, second: () => Promise<B>) {
+			let release!: () => void;
+			const hold = new Promise<void>((r) => (release = r));
+			let holder!: (pid: number) => void;
+			const holderPid = new Promise<number>((r) => (holder = r));
+			const a = asTenant(userId, async () => {
+				const out = await first();
+				const [{ pid }] = await db.execute<{ pid: number }>(sql`select pg_backend_pid() as pid`);
+				holder(pid);
+				await hold;
+				return out;
+			});
+			const pid = await Promise.race([holderPid, a as Promise<never>]);
+			const b = asTenant(userId, second);
+			b.catch(() => {}); // awaited below; this only keeps a rejection during the poll handled
+			try {
+				for (let i = 0; ; i++) {
+					const [{ n }] = await db.execute<{ n: number }>(
+						sql`select count(*)::int as n from pg_stat_activity where ${pid} = any(pg_blocking_pids(pid))`
+					);
+					if (n > 0) break;
+					if (i === 60) throw new Error('the second grade never waited on the first');
+					await new Promise((r) => setTimeout(r, 50));
+				}
+			} catch (e) {
+				release();
+				await Promise.allSettled([a, b]);
+				throw e;
+			}
+			release();
+			return Promise.all([a, b]);
+		}
+
+		const stateOf = async (id: string) =>
+			(await db.select().from(table.reviewState).where(eq(table.reviewState.nodeId, id)))[0];
+
+		it('steps Cards from the state a Quest grade committed while Cards waited', async () => {
+			await quest.questView(userId, at(0));
+			const e = await quest.openEncounter(userId, card(1), at(1));
+			if (!e.ok) throw new Error(e.reason);
+			const r = (await cards.startRound(userId, deck, at(1)))!;
+			expect(r.cards.map((c) => c.id)).toContain(card(1));
+
+			let questWrote: table.ReviewState | undefined;
+			const [g, stored] = await whileHeld(
+				async () => {
+					const out = outcome(
+						await quest.gradeEncounter(userId, e.encounter.encounterId, card(1), 3, at(2))
+					);
+					questWrote = await stateOf(card(1));
+					return out;
+				},
+				() => cards.recordGrade(userId, r.assessmentId, card(1), 3, 0, at(3))
+			);
+			expect(g.rating).toBe(3);
+			expect(stored).toBe(3);
+
+			const rows = (await logs()).sort((x, y) => x.reviewedAt.getTime() - y.reviewedAt.getTime());
+			expect(rows.map((l) => l.surface)).toEqual(['quest', 'cards']);
+			// Cards stepped FSRS from what Quest wrote, not from the card as never seen.
+			expect(rows[1].state).toBe(questWrote!.state);
+			expect((await stateOf(card(1))).reps).toBe(2);
+		}, 20_000);
+
+		it('refuses a Quest review that a Cards grade closed while Quest waited', async () => {
+			await db.insert(table.reviewState).values({
+				nodeId: card(0),
+				userId,
+				stability: 5,
+				difficulty: 5,
+				due: at(-10),
+				reps: 3,
+				state: 2,
+				lastReview: at(-60 * 24 * 5)
+			});
+			await quest.questView(userId, at(0));
+			const e = await quest.openEncounter(userId, card(0), at(1));
+			if (!e.ok) throw new Error(e.reason);
+			const r = (await cards.startRound(userId, deck, at(1)))!;
+			expect(r.cards.map((c) => c.id)).toContain(card(0));
+
+			const [stored, g] = await whileHeld(
+				() => cards.recordGrade(userId, r.assessmentId, card(0), 3, 0, at(2)),
+				() => quest.gradeEncounter(userId, e.encounter.encounterId, card(0), 3, at(3))
+			);
+			expect(stored).toBe(3);
+			// Cards made it due in days, so the review encounter is over.
+			expect(g).toEqual({ refused: 'stale' });
+			expect((await logs()).map((l) => l.surface)).toEqual(['cards']);
 		}, 20_000);
 	});
 });

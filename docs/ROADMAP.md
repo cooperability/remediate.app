@@ -30,7 +30,7 @@ Size is scope, not time: **S** touches one module and its test, **M** touches a 
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Node                  | 22. `isomorphic-dompurify` is pinned to 2.26.0. Later versions pull jsdom 27+, which Vercel's runtime cannot load ([#345](https://github.com/cooperability/remediate.app/pull/345)). Dependabot ignores newer versions. |
 | Typecheck             | `yarn run check`. Plain `yarn check` runs Yarn 1's built-in integrity check, not svelte-check.                                                                                                                          |
-| Unit tests            | `yarn test:server`. Without `DATABASE_URL`, the `*.db.test.ts` files skip. 337 pass and 72 skip that way on this branch.                                                                                                |
+| Unit tests            | `yarn test:server`. Without `DATABASE_URL`, the `*.db.test.ts` files skip. 374 pass and 112 skip that way (measured 2026-11-07).                                                                                        |
 | Database tests        | `yarn db:up` (Docker), `yarn db:migrate`, then `yarn test:server` with `DATABASE_URL` set. CI runs them against pgvector/pg17 on every PR.                                                                              |
 | e2e                   | `yarn test:e2e`. On Windows, `adapter-vercel` fails to create a symlink (EPERM) during the build, so e2e runs in CI.                                                                                                    |
 | Request model         | Every signed-in request runs inside one `asTenant` transaction (`src/hooks.server.ts:63`, `src/lib/server/db/index.ts:86`). A thrown error rolls back everything that request wrote.                                    |
@@ -39,50 +39,41 @@ Size is scope, not time: **S** touches one module and its test, **M** touches a 
 
 ## Ranked backlog
 
-|   # | ID                                                             | Task                                                             | Type          | Size | Status |
-| --: | -------------------------------------------------------------- | ---------------------------------------------------------------- | ------------- | :--: | ------ |
-|   1 | [DATA-A](#data-a-read-review-state-after-taking-the-card-lock) | Read review state after taking the card lock                     | bug, data     |  S   | open   |
-|   2 | [DATA-B](#data-b-make-finishround-idempotent)                  | Make `finishRound` idempotent                                    | bug, data     |  S   | open   |
-|   3 | [DATA-C](#data-c-isolate-each-harvest-row)                     | Isolate each harvest row so one page cannot wedge the queue      | bug, data     |  M   | open   |
-|   4 | [SEC-B](#sec-b-narrow-the-tenant-roles-grants)                 | Narrow the tenant role's grants, and test RLS coverage           | bug, security |  S   | open   |
-|   5 | [DATA-D](#data-d-take-the-quest-lock-in-deletedeck)            | Take the Quest lock in `deleteDeck`                              | bug, data     |  S   | open   |
-|   6 | [QST-C](#qst-c-hide-the-answer-before-a-quest-review)          | Hide the answer before a Quest review of the room's own card     | bug, data     |  S   | open   |
-|   7 | [OPS-1](#ops-1--human-deploy-and-credential-checks)            | Deploy and credential checks                                     | human         |  S   | open   |
-|   8 | [OBS-A](#obs-a-observability)                                  | Observability: request logs, timings, error ids, a latency check | epic          |  M   | open   |
-|   9 | [CRD-A](#crd-a-card-editor-for-phone-and-desktop)              | Card editor for phone and desktop                                | epic          |  L   | open   |
-|  10 | [BMX-A](#bmx-a--human-decide-what-a-bookmark-becomes)          | Decide what a bookmark becomes in the graph                      | human         |  S   | open   |
-|  11 | [AI-A](#ai-a-enrichment-lite)                                  | Enrichment-lite: summaries, concepts, concept-overlap edges      | epic          |  L   | open   |
-|  12 | [AI-B](#ai-b--human-read-20-ai-edges)                          | Read 20 AI edges (gate B3)                                       | human         |  S   | open   |
-|  13 | [BMX-B](#bmx-b-keep-the-article-text)                          | Keep the harvested article text                                  | epic          |  M   | open   |
-|  14 | [BMX-C](#bmx-c-triage-as-a-suggestion)                         | BMX triage as a pre-filled suggestion                            | epic          |  M   | open   |
-|  15 | [AI-D](#ai-d-suggest-cards-from-a-harvested-article)           | Suggest cards from a harvested article                           | epic          |  M   | open   |
-|  16 | [AI-C](#ai-c-design-prereq_of)                                 | Design how `prereq_of` edges are produced                        | epic          |  L   | open   |
-|  17 | [QST-A](#qst-a--human-playtest-quest-on-a-phone)               | Playtest Quest on a phone (gate B4)                              | human         |  S   | open   |
-|  18 | [QST-B](#qst-b-quest-onboarding)                               | Quest onboarding: a first player can tell how it works           | epic          |  M   | open   |
-|  19 | [CRD-C](#crd-c-undo-the-last-grade)                            | Undo the last grade                                              | epic          |  M   | open   |
-|  20 | [QST-D](#qst-d-make-quest-scale-with-tag-count)                | Make Quest's map layout scale with tag count                     | bug, perf     |  M   | open   |
-|  21 | [SEC-C](#sec-c-security-headers-and-a-graded-deploy)           | Security headers and a graded deploy                             | epic          |  S   | open   |
-|  22 | [P1-A](#p1-a-media-apkg-and-export)                            | Media, `.apkg` import, export to Anki                            | epic          |  L   | open   |
-|  23 | [BMX-D](#bmx-d-harvest-politeness-and-parsing-fixes)           | Harvest politeness and parsing fixes                             | bugs          |  M   | open   |
-|  24 | [PWA-A](#pwa-a-offline-and-installed-app-follow-ups)           | Offline and installed-app follow-ups                             | bugs          |  M   | open   |
-|  25 | [QST-E](#qst-e-quest-polish)                                   | Quest polish: stale tabs, learning cards                         | bugs          |  S   | open   |
-|  26 | [CRD-B](#crd-b-cards-and-auth-minor-fixes)                     | Cards and auth minor fixes                                       | bugs          |  S   | open   |
-|  27 | [TEST-A](#test-a-tests-that-cannot-fail-today)                 | Tests for behaviour no test pins today                           | tests         |  M   | open   |
-|  28 | [CLEAN-A](#clean-a-remove-orphaned-schema-and-config)          | Remove orphaned schema and config                                | cleanup       |  S   | open   |
+|   # | ID                                                    | Task                                                             | Type          | Size | Status |
+| --: | ----------------------------------------------------- | ---------------------------------------------------------------- | ------------- | :--: | ------ |
+|   1 | [DATA-B](#data-b-make-finishround-idempotent)         | Make `finishRound` idempotent                                    | bug, data     |  S   | open   |
+|   2 | [DATA-C](#data-c-isolate-each-harvest-row)            | Isolate each harvest row so one page cannot wedge the queue      | bug, data     |  M   | open   |
+|   3 | [SEC-B](#sec-b-narrow-the-tenant-roles-grants)        | Narrow the tenant role's grants, and test RLS coverage           | bug, security |  S   | open   |
+|   4 | [DATA-D](#data-d-take-the-quest-lock-in-deletedeck)   | Take the Quest lock in `deleteDeck`                              | bug, data     |  S   | open   |
+|   5 | [QST-C](#qst-c-hide-the-answer-before-a-quest-review) | Hide the answer before a Quest review of the room's own card     | bug, data     |  S   | open   |
+|   6 | [OPS-1](#ops-1--human-deploy-and-credential-checks)   | Deploy and credential checks                                     | human         |  S   | open   |
+|   7 | [OBS-A](#obs-a-observability)                         | Observability: request logs, timings, error ids, a latency check | epic          |  M   | open   |
+|   8 | [CRD-A](#crd-a-card-editor-for-phone-and-desktop)     | Card editor for phone and desktop                                | epic          |  L   | open   |
+|   9 | [BMX-A](#bmx-a--human-decide-what-a-bookmark-becomes) | Decide what a bookmark becomes in the graph                      | human         |  S   | open   |
+|  10 | [AI-A](#ai-a-enrichment-lite)                         | Enrichment-lite: summaries, concepts, concept-overlap edges      | epic          |  L   | open   |
+|  11 | [AI-B](#ai-b--human-read-20-ai-edges)                 | Read 20 AI edges (gate B3)                                       | human         |  S   | open   |
+|  12 | [BMX-B](#bmx-b-keep-the-article-text)                 | Keep the harvested article text                                  | epic          |  M   | open   |
+|  13 | [BMX-C](#bmx-c-triage-as-a-suggestion)                | BMX triage as a pre-filled suggestion                            | epic          |  M   | open   |
+|  14 | [AI-D](#ai-d-suggest-cards-from-a-harvested-article)  | Suggest cards from a harvested article                           | epic          |  M   | open   |
+|  15 | [AI-C](#ai-c-design-prereq_of)                        | Design how `prereq_of` edges are produced                        | epic          |  L   | open   |
+|  16 | [QST-A](#qst-a--human-playtest-quest-on-a-phone)      | Playtest Quest on a phone (gate B4)                              | human         |  S   | open   |
+|  17 | [QST-B](#qst-b-quest-onboarding)                      | Quest onboarding: a first player can tell how it works           | epic          |  M   | open   |
+|  18 | [CRD-C](#crd-c-undo-the-last-grade)                   | Undo the last grade                                              | epic          |  M   | open   |
+|  19 | [QST-D](#qst-d-make-quest-scale-with-tag-count)       | Make Quest's map layout scale with tag count                     | bug, perf     |  M   | open   |
+|  20 | [SEC-C](#sec-c-security-headers-and-a-graded-deploy)  | Security headers and a graded deploy                             | epic          |  S   | open   |
+|  21 | [P1-A](#p1-a-media-apkg-and-export)                   | Media, `.apkg` import, export to Anki                            | epic          |  L   | open   |
+|  22 | [BMX-D](#bmx-d-harvest-politeness-and-parsing-fixes)  | Harvest politeness and parsing fixes                             | bugs          |  M   | open   |
+|  23 | [PWA-A](#pwa-a-offline-and-installed-app-follow-ups)  | Offline and installed-app follow-ups                             | bugs          |  M   | open   |
+|  24 | [QST-E](#qst-e-quest-polish)                          | Quest polish: stale tabs, learning cards                         | bugs          |  S   | open   |
+|  25 | [CRD-B](#crd-b-cards-and-auth-minor-fixes)            | Cards and auth minor fixes                                       | bugs          |  S   | open   |
+|  26 | [TEST-A](#test-a-tests-that-cannot-fail-today)        | Tests for behaviour no test pins today                           | tests         |  M   | open   |
+|  27 | [CLEAN-A](#clean-a-remove-orphaned-schema-and-config) | Remove orphaned schema and config                                | cleanup       |  S   | open   |
 
 [Deferred and cut](#deferred-and-cut) lists what was decided against, so nobody builds it from an old doc.
 
 ---
 
 ## 1. Security and data integrity
-
-### DATA-A: Read review state after taking the card lock
-
-- **Type** bug, silent data corruption · **Size** S · **Depends** none · **Evidence** Probable: traced to lines and documented Postgres READ COMMITTED behaviour, not executed.
-- **Why.** `recordGrade` and `gradeEncounter` read `review_state` in the same statement that locks the card (`select … left join review_state … for update of nodes`). When a second grade waits on that lock, Postgres hands it the `review_state` row from its pre-wait snapshot, because the first writer never updated the locked `nodes` row. The second grade steps FSRS from the stale state and overwrites the first grade's result. Quest's "already graded in Cards" refusal also judges on the stale state, so it grades instead of refusing. Nothing errors.
-- **Where.** `src/lib/server/cards/repo.ts:324-331` and `:346`, `src/lib/server/quest/repo.ts:551-561` and `:576`, contract at `src/lib/server/cards/review.ts:11,25`.
-- **Do.** In both paths, lock first (`select id from nodes … for update`), then read `review_state` in a separate statement in the same transaction. A new statement takes a fresh snapshot.
-- **Acceptance.** A DB test that grades one card from Cards and from Quest at once (`Promise.all`, each in its own `asTenant`). It asserts two `review_log` rows, the second row's prior state equals the first write's result, and final `reps === 2`. On `main` it gives `reps === 1`. Force the interleaving (hold the card lock in an outer transaction while the second grade starts, then commit), or the test can pass on `main` by timing luck.
 
 ### DATA-B: Make `finishRound` idempotent
 
@@ -149,7 +140,7 @@ Only Cooper can do these. Each is a dashboard or a secret.
 ### OBS-A: Observability
 
 - **Type** epic · **Size** M · **Depends** none to start. Step 6 needs a decision from Cooper.
-- **Why.** Nobody would notice most of the failures in this file. The app's only signals are 5 `console` calls in `src` (grep, 2026-10-11) and Vercel's runtime log. The PRD's latency targets (grade to next under 100 ms p95, Quest room under 200 ms, PRD §9) have never been measured in production. A harvest round that hits the function limit rolls back and leaves no record (DATA-C). A stale FSRS write (DATA-A) has no counter. AI-A will spend money on every call, and nothing will show the spend.
+- **Why.** Nobody would notice most of the failures in this file. The app's only signals are 5 `console` calls in `src` (grep, 2026-10-11) and Vercel's runtime log. The PRD's latency targets (grade to next under 100 ms p95, Quest room under 200 ms, PRD §9) have never been measured in production. A harvest round that hits the function limit rolls back and leaves no record (DATA-C). AI-A will spend money on every call, and nothing will show the spend.
 - **Where.** `src/hooks.server.ts` (every request passes through `handle`, and there is no `handleError` yet), `src/routes/api/review/grade/+server.ts`, `src/routes/api/quest/*`, `src/lib/server/bmx/queue.ts`, `src/routes/cards/+page.server.ts` (import), `src/lib/server/health.ts`.
 - **Do.**
   1. A small logger module, no dependency: one JSON line per request from `handle` with route id, method, status, duration in ms, a request id, and a hashed user id.
@@ -257,7 +248,7 @@ Only Cooper can do these. Each is a dashboard or a secret.
 
 ### CRD-C: Undo the last grade
 
-- **Type** epic · **Size** M · **Depends** DATA-A (undo touches the same write path), DATA-B (a finished round's standing must not keep counting a grade that was undone).
+- **Type** epic · **Size** M · **Depends** DATA-A (done in [#398](https://github.com/cooperability/remediate.app/pull/398), undo touches the same write path), DATA-B (a finished round's standing must not keep counting a grade that was undone).
 - **Why.** PRD CRD-5. A mis-tapped rating has no fix today, and FSRS learns from it.
 - **Where.** `src/lib/components/study/keys.ts` (handles flip and 1-4 only), `src/routes/cards/study/*`, `src/lib/server/cards/review.ts`, `src/lib/server/cards/repo.ts`.
 - **Do.** `U` undoes the last grade of the current round: restore the prior `review_state` from the newest `review_log` row and delete that row, under the card lock. One level of undo.
@@ -340,7 +331,6 @@ For each line below, deleting it fails no test. Each needs a test that does.
 | `src/hooks.server.ts:34-38`                                      | Removing an address from `ALLOWED_EMAILS` ends its sessions         |
 | `src/routes/login/+page.server.ts:20` (`!isAllowed(email) \|\|`) | The allowlist itself. No test calls the login action                |
 | `src/lib/server/auth.ts:46-59`                                   | Session expiry and renewal. There is no `auth.test.ts`              |
-| `src/lib/server/cards/repo.ts:331` (`.for('update', …)`)         | The card lock (covered by DATA-A's test once it lands)              |
 | `src/lib/server/bmx/queue.ts:184` (`skipLocked: true`)           | The overlap test passes with plain `FOR UPDATE` too                 |
 | `src/lib/server/bmx/queue.ts:207`                                | `markDuplicates` after a fetch round                                |
 | `src/lib/server/bmx/ssrf.ts:70`                                  | Refuse when any DNS record is private, not just the first           |
@@ -377,6 +367,7 @@ Shipped work, newest first, so a cold reader can tell built from planned.
 
 | What                                                                                                                                                                                                                                                                                                                                                                                                          | PR                                                                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A grade that waited on the card lock reads `review_state` after the lock is granted, so it steps FSRS from a grade that committed during the wait (DATA-A). Cards and Quest share `reviewAfterLock`. A Quest review that a concurrent Cards grade closed is refused instead of graded.                                                                                                                        | [#398](https://github.com/cooperability/remediate.app/pull/398)                                                                         |
 | Signed-out demo (PRD QST-6, reshaped): "Try the demo" on the landing page makes a guest tenant holding the two AI-made decks, so Cards, Browse and Quest run unchanged under RLS. Guests expire after 24 hours and each new start purges up to 10 expired ones. Caps: 100 live guests, 5 starts per hour per hashed IPv4 address or IPv6 /64. Import and harvest stay closed to guests.                       | [#389](https://github.com/cooperability/remediate.app/pull/389)                                                                         |
 | Login refuses an address after 5 failed attempts in 15 minutes (SEC-A). The allowlist and password checks both run on every attempt.                                                                                                                                                                                                                                                                          | [#365](https://github.com/cooperability/remediate.app/pull/365)                                                                         |
 | Harvest: a gzip, deflate or brotli body cut off mid-stream fails fast instead of hanging past the timeout. Text written to jsonb never holds half a surrogate pair. Pasted URLs keep apostrophes. The Acronyms deck gains a WHATWG card. An import with no deck name files under Default. `/api/review/finish` answers a `null` body with 400. Dependabot stops proposing `isomorphic-dompurify` past 2.26.0. | [#356](https://github.com/cooperability/remediate.app/pull/356)                                                                         |

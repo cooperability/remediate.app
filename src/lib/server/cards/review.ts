@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import type { Grade } from 'ts-fsrs';
 import type { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
@@ -8,7 +9,7 @@ export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export interface ReviewWrite {
 	userId: string;
 	nodeId: string;
-	/** The card's state as read under the caller's row lock. Null for a card never reviewed. */
+	/** The card's state from reviewAfterLock. Null for a card never reviewed. */
 	review: table.ReviewState | null;
 	rating: Grade;
 	now: Date;
@@ -43,4 +44,15 @@ export async function writeReview(tx: Tx, r: ReviewWrite) {
 		.values({ nodeId: r.nodeId, userId: r.userId, ...next })
 		.onConflictDoUpdate({ target: table.reviewState.nodeId, set: next });
 	return next;
+}
+
+/**
+ * The card's review state, read after the caller's row lock on the card is
+ * granted. Never join it into the locking select: under READ COMMITTED a select
+ * that waited on a row lock still reads review_state from the snapshot it took
+ * before the wait, so it misses a grade that committed during the wait.
+ */
+export async function reviewAfterLock(tx: Tx, nodeId: string) {
+	const [r] = await tx.select().from(table.reviewState).where(eq(table.reviewState.nodeId, nodeId));
+	return r ?? null;
 }
