@@ -1,9 +1,18 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Logo from '$lib/components/brand/Logo.svelte';
 	import DemoRound from '$lib/components/study/DemoRound.svelte';
 
 	let { data } = $props();
+
+	// Set by POST /demo when it could not start a guest.
+	const demoRefused = $derived(
+		{
+			full: 'The demo is full right now. Try again later.',
+			throttled: 'Too many demos started from your network. Try again in an hour.'
+		}[page.url.searchParams.get('demo') ?? '']
+	);
 
 	let flipped = $state(false);
 	let hovering = $state(false);
@@ -73,10 +82,23 @@
 					{#if data.user}
 						<a href={resolve('/cards')} class="btn btn-primary px-6 py-3 text-base">Open decks</a>
 					{:else}
-						<a href={resolve('/login')} class="btn btn-primary px-6 py-3 text-base">Log in</a>
+						<form method="POST" action="/demo">
+							<button class="btn btn-primary px-6 py-3 text-base">Try the demo</button>
+						</form>
+						<a href={resolve('/login')} class="btn btn-ghost px-6 py-3 text-base">Log in</a>
 					{/if}
-					<span class="text-muted font-mono text-xs">Invite only. Passwordless email code.</span>
 				</div>
+				{#if data.user}
+					<p class="text-muted mt-3 font-mono text-xs">Invite only. Passwordless email code.</p>
+				{:else}
+					<p class="text-muted mt-3 max-w-xl text-sm">
+						No account needed. The demo opens two AI-made decks, software and personal finance with
+						career growth, in the full app: browse, study and Quest. It is wiped within 24 hours.
+					</p>
+				{/if}
+				{#if demoRefused}
+					<p class="text-again mt-3 text-sm" role="alert">{demoRefused}</p>
+				{/if}
 			</div>
 
 			<!-- Demo card: flips on a timer, and holds the answer on hover. -->
@@ -195,13 +217,6 @@
 		<section class="mt-16" aria-labelledby="coming-heading">
 			<h2 id="coming-heading" class="eyebrow">Coming, not built yet</h2>
 			<div class="mt-4 grid gap-4 sm:grid-cols-2">
-				<div class="panel border-dashed p-5">
-					<div class="flex items-center gap-2">
-						<h3 class="font-semibold">Quest</h3>
-						<span class="chip">coming</span>
-					</div>
-					<p class="text-muted mt-1 text-sm">A second surface on the same knowledge graph.</p>
-				</div>
 				<div class="panel border-dashed p-5">
 					<div class="flex items-center gap-2">
 						<h3 class="font-semibold">BMX harvest</h3>

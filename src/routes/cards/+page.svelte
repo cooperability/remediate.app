@@ -121,9 +121,11 @@
 			Decks <span class="text-muted font-mono text-xs font-normal">{data.decks.length}</span>
 		</h1>
 		<div class="flex items-center gap-1 sm:gap-2">
-			<a href={resolve('/harvest')} class="btn btn-ghost text-muted min-h-11 sm:min-h-0">
-				<Link class="size-4" /> Harvest links
-			</a>
+			{#if !data.user?.guest}
+				<a href={resolve('/harvest')} class="btn btn-ghost text-muted min-h-11 sm:min-h-0">
+					<Link class="size-4" /> Harvest links
+				</a>
+			{/if}
 			<a href="{resolve('/cards/browse')}?new=1" class="btn min-h-11 sm:min-h-0">
 				<Plus class="size-4" /> New card
 			</a>
@@ -145,57 +147,59 @@
 		</section>
 	{/if}
 
-	<form
-		method="POST"
-		action="?/import"
-		enctype="multipart/form-data"
-		use:enhance={() => {
-			importing = true;
-			return async ({ update }) => {
-				await update();
-				importing = false;
-				fileName = '';
-			};
-		}}
-		class="mt-8"
-	>
-		<label
-			class="panel hover:border-accent focus-within:border-accent flex cursor-pointer flex-col items-center gap-2 border-2 border-dashed p-8 text-center transition"
+	{#if !data.user?.guest}
+		<form
+			method="POST"
+			action="?/import"
+			enctype="multipart/form-data"
+			use:enhance={() => {
+				importing = true;
+				return async ({ update }) => {
+					await update();
+					importing = false;
+					fileName = '';
+				};
+			}}
+			class="mt-8"
 		>
-			<span
-				class="bg-surface-2 text-muted grid size-11 place-items-center rounded-full"
-				aria-hidden="true"><Upload class="size-5" /></span
+			<label
+				class="panel hover:border-accent focus-within:border-accent flex cursor-pointer flex-col items-center gap-2 border-2 border-dashed p-8 text-center transition"
 			>
-			<span class="eyebrow">Import</span>
-			<span class="font-semibold break-all">{fileName || 'Choose an Anki export'}</span>
-			<span class="text-muted text-xs"
-				>.txt, .tsv or .csv. Re-importing updates cards in place, except ones edited here.</span
-			>
-			<input
-				type="file"
-				name="file"
-				accept=".txt,.tsv,.csv"
-				required
-				aria-label="Anki export"
-				class="sr-only"
-				onchange={(e) => (fileName = e.currentTarget.files?.[0]?.name ?? '')}
-			/>
-		</label>
-		<div class="mt-3 flex items-center gap-3">
-			<!-- Not gated on fileName: that is empty until hydration, and the input is required. -->
-			<button class="btn btn-primary" disabled={importing}>
-				{importing ? 'Importing…' : 'Import deck'}
-			</button>
-			{#if form?.message}
-				<p class="text-sm" role="status">
-					{form.message}
-					{#if 'warnings' in form && form.warnings?.length}
-						<span class="text-hard">{form.warnings.length} warnings.</span>
-					{/if}
-				</p>
-			{/if}
-		</div>
-	</form>
+				<span
+					class="bg-surface-2 text-muted grid size-11 place-items-center rounded-full"
+					aria-hidden="true"><Upload class="size-5" /></span
+				>
+				<span class="eyebrow">Import</span>
+				<span class="font-semibold break-all">{fileName || 'Choose an Anki export'}</span>
+				<span class="text-muted text-xs"
+					>.txt, .tsv or .csv. Re-importing updates cards in place, except ones edited here.</span
+				>
+				<input
+					type="file"
+					name="file"
+					accept=".txt,.tsv,.csv"
+					required
+					aria-label="Anki export"
+					class="sr-only"
+					onchange={(e) => (fileName = e.currentTarget.files?.[0]?.name ?? '')}
+				/>
+			</label>
+			<div class="mt-3 flex items-center gap-3">
+				<!-- Not gated on fileName: that is empty until hydration, and the input is required. -->
+				<button class="btn btn-primary" disabled={importing}>
+					{importing ? 'Importing…' : 'Import deck'}
+				</button>
+				{#if form?.message}
+					<p class="text-sm" role="status">
+						{form.message}
+						{#if 'warnings' in form && form.warnings?.length}
+							<span class="text-hard">{form.warnings.length} warnings.</span>
+						{/if}
+					</p>
+				{/if}
+			</div>
+		</form>
+	{/if}
 </main>
 
 <style>
