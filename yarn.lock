@@ -2248,10 +2248,10 @@ postcss@^8.4.49, postcss@^8.5.30:
     picocolors "^1.1.1"
     source-map-js "^1.2.2"
 
-postgres@^3.4.5:
-  version "3.4.9"
-  resolved "https://registry.yarnpkg.com/postgres/-/postgres-3.4.9.tgz#8e9a49cecb1b0e7d67a607f32a53ed54b3055271"
-  integrity sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==
+postgres@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/postgres/-/postgres-4.0.0.tgz#f16bb1fd6842ae5e4f2e4b1dec2b61895bc2f852"
+  integrity sha512-kBh8qXtcvvIAc00DftQyOxz7M/3Zxww1tRMXZPLzipNXXl5PIzHml+9zB3Mrge2U8ldc0WF1ZdLp1iYQi7Kh3A==
 
 prelude-ls@^1.2.1:
   version "1.2.1"
