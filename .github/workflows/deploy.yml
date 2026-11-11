@@ -52,8 +52,9 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
+    # VERCEL_TOKEN is set only on the steps that call vercel, so dependency
+    # install scripts never see it.
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -77,10 +78,14 @@ jobs:
         run: npm install --global vercel@65.2.0
 
       - name: Pull Vercel production settings
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       # Build before migrating, so a broken build never touches the database.
       - name: Build
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Migrate production database
@@ -89,6 +94,8 @@ jobs:
         run: yarn db:migrate
 
       - name: Deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
 
       - name: Wait for a healthy production
