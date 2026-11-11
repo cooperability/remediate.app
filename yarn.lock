@@ -783,17 +783,17 @@
   resolved "https://registry.yarnpkg.com/@sveltejs/acorn-typescript/-/acorn-typescript-1.0.13.tgz#8c7c3cc7014e212f2e8fccee0159dbecfe602405"
   integrity sha512-wgKggnhZVL9Bfx1OaKKTrYY9BFRk6C8UAkQNUcIv1+llzYrIqy+RZm5HPKzn0NpEBvTVhTqB4kQyllZywsRBRQ==
 
-"@sveltejs/adapter-vercel@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@sveltejs/adapter-vercel/-/adapter-vercel-7.0.1.tgz#f6846640d2d0ad874ef3cd4ff0533547d2a9b7be"
-  integrity sha512-BnIGkQACaEeiXYcC5idodcUylp9Jyyx9aHIb7sqcGWfj8X3nJ57y8abmhFuAkg3oipLhaEfRqwwNtbuVhEaLhQ==
+"@sveltejs/adapter-vercel@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@sveltejs/adapter-vercel/-/adapter-vercel-7.0.2.tgz#b16f49dcbc11f09ca74f29601cc85fd25b9525ed"
+  integrity sha512-5pk92uA2y2bRf5OksP9sKeAYHKNEBClc9Ae+6KjUsIftqb0xW8UdlbIZSs4rMq8w5tv2KTjjI+iVN+hdH3vqBg==
   dependencies:
     "@vercel/nft" "^1.10.2"
 
-"@sveltejs/kit@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@sveltejs/kit/-/kit-3.1.0.tgz#52f065b4254267aa25894fe7eb9cce490cd8bd93"
-  integrity sha512-JTWlq2HQlkqx6vIoxhC0R6sc4WVqbQoRyEmr5YlqKmiYbzY1U3awtSWTmjMLlS056a49AmkQR6rnNANXIE8B0Q==
+"@sveltejs/kit@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@sveltejs/kit/-/kit-3.1.1.tgz#dd63a14dd9a984bb946b64c5ce8ccb9657b15360"
+  integrity sha512-BiEMvekYXE9Gu/YhWJ/yJ0WDLH1PX/dmjuAeFp5rrtdmgdzkjt7DvimlSP+/U4tgposl7pkE20luHpcnc6BgRw==
   dependencies:
     "@rolldown/pluginutils" "^1.0.1"
     "@standard-schema/spec" "^1.1.0"
@@ -1968,14 +1968,7 @@ magic-string@^0.30.11:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
 
-magic-string@^1.0.0, magic-string@^1.2.3, magic-string@^1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-1.4.3.tgz#a0887990507b2ffbcdbc367a8759ed97e0b1233b"
-  integrity sha512-z12OxmaPGE0F4xlpGdjuAUckipLpQlTAuAmyGhNoD7ODpYUzvDfvtxUbjM/jwznyP178oju/KDdyi220wNJ0RQ==
-  dependencies:
-    "@jridgewell/sourcemap-codec" "^1.6.0"
-
-magic-string@^1.1.0:
+magic-string@^1.0.0, magic-string@^1.1.0, magic-string@^1.2.3, magic-string@^1.4.3:
   version "1.4.5"
   resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-1.4.5.tgz#201c852d51eb0664d6f66cf7ab93b20b416e48d9"
   integrity sha512-oLLC2+YvQUfAa+vxoufE/yc1icb87M9iXIRqAoR/2EhE/8cb3SF/+Gi0c2By1B+5Vz2e2vQtUvHiu1+63Znh+w==
@@ -2330,10 +2323,10 @@ std-env@^4.3.0:
   resolved "https://registry.yarnpkg.com/std-env/-/std-env-4.3.0.tgz#4e7231b61fd83219aa7f76f71fa8818b07e41321"
   integrity sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag==
 
-svelte-check@^4.7.7:
-  version "4.7.7"
-  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.7.tgz#627039e8159c16aa0d4be890e0edb1f7221e2476"
-  integrity sha512-Ge2IMdeTpbJuzNFGRiiMg0RWgbScysKQu7xwcyFJ22+DU9F5nPX51+Q3gHmGqRxYQMx2knreVWt5oCtfe0vf2g==
+svelte-check@^4.7.8:
+  version "4.7.8"
+  resolved "https://registry.yarnpkg.com/svelte-check/-/svelte-check-4.7.8.tgz#20f2a410997c5e09f0151aef361e169e8d229b18"
+  integrity sha512-laZ49GFHZ3b0z2PWinJWL0syehc/PTR8aHaUaTiBkWJ+4Y38nhxjmXsSz7CbGa3VdKopViVbrBH3bGNqIAI0bQ==
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.25"
     "@sveltejs/load-config" "^0.2.3"
