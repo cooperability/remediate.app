@@ -6,7 +6,7 @@ import { parseAnkiExport } from '$lib/server/ingest/anki-tsv';
 import { questLock, syncImportGraphIn } from '$lib/server/quest/repo';
 import { introducedToday } from './budget';
 import { classify, gradeRound, mergeStanding, standingOf } from './grading';
-import { writeReview } from './review';
+import { reviewAfterLock, writeReview } from './review';
 import { previewIntervals } from './scheduler';
 import { NEW_PER_DAY, ROUND_SIZE, selectRound } from './select';
 
@@ -343,13 +343,12 @@ export async function recordGrade(
 	return db.transaction(async (tx) => {
 		// Lock the card so two tabs grading it at once cannot both read the same state.
 		const [row] = await tx
-			.select({ id: table.node.id, review: table.reviewState })
+			.select({ id: table.node.id })
 			.from(table.node)
-			.leftJoin(table.reviewState, eq(table.reviewState.nodeId, table.node.id))
 			.where(
 				and(eq(table.node.id, nodeId), eq(table.node.userId, userId), eq(table.node.deck, a.deck))
 			)
-			.for('update', { of: table.node });
+			.for('update');
 		if (!row) return null;
 
 		const prior = await tx
@@ -367,7 +366,7 @@ export async function recordGrade(
 		await writeReview(tx, {
 			userId,
 			nodeId,
-			review: row.review,
+			review: await reviewAfterLock(tx, nodeId),
 			rating,
 			now,
 			surface: 'cards',
