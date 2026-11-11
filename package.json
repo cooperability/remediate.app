@@ -39,7 +39,7 @@
 		"drizzle-kit": "^0.31.11",
 		"eslint": "^10.13.0",
 		"eslint-config-prettier": "^10.0.1",
-		"eslint-plugin-svelte": "^3.0.0",
+		"eslint-plugin-svelte": "^3.24.0",
 		"globals": "^17.14.0",
 		"playwright": "^1.52.0",
 		"prettier": "^3.9.10",
