@@ -80,6 +80,9 @@ test.describe('card editor', () => {
 			if (width < 1024) {
 				// The phone editor is a full-screen sheet. Close it to reach the list.
 				await page.getByRole('link', { name: 'Close editor' }).click();
+				// Gone means that navigation has landed. Before then it can still take focus
+				// from the search box below.
+				await expect(page.getByRole('link', { name: 'Close editor' })).toHaveCount(0);
 				const overflow = await page.evaluate(
 					() => document.documentElement.scrollWidth - document.documentElement.clientWidth
 				);
@@ -87,6 +90,10 @@ test.describe('card editor', () => {
 			}
 
 			await page.locator('#browse-q').fill(marker);
+			// Wait for the debounced search, or it lands mid-step later and closes the
+			// Account menu. Typing goes on through it: the box keeps focus.
+			await expect(page).toHaveURL(new RegExp(`[?&]q=${marker}`));
+			await expect(page.locator('#browse-q')).toBeFocused();
 			const row = page.getByRole('link', { name: new RegExp(marker) });
 			await expect(row).toHaveCount(1);
 			await row.click();
