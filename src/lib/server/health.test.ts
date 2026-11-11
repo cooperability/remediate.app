@@ -67,6 +67,13 @@ describe('schemaStatus', () => {
 		execute.mockRejectedValue(new Error('relation "drizzle.__drizzle_migrations" does not exist'));
 		expect(await schemaStatus()).toBe('unknown');
 	});
+
+	it('is unknown when the database does not answer in time', async () => {
+		execute.mockReturnValue(new Promise(() => {}));
+		const started = Date.now();
+		expect(await schemaStatus(50)).toBe('unknown');
+		expect(Date.now() - started).toBeLessThan(1000);
+	});
 });
 
 describe('GET /api/health', () => {
