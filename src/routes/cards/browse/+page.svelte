@@ -241,8 +241,7 @@
 			<form
 				method="GET"
 				action={resolve('/cards/browse')}
-				data-sveltekit-keepfocus
-				data-sveltekit-noscroll
+				data-sveltekit-reset="false"
 				class="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3"
 			>
 				{#if data.card}<input type="hidden" name="card" value={data.card.id} />{/if}
