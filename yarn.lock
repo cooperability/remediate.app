@@ -2181,10 +2181,10 @@ postcss@^8.4.49, postcss@^8.5.30:
     picocolors "^1.1.1"
     source-map-js "^1.2.2"
 
-postgres@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/postgres/-/postgres-4.0.0.tgz#f16bb1fd6842ae5e4f2e4b1dec2b61895bc2f852"
-  integrity sha512-kBh8qXtcvvIAc00DftQyOxz7M/3Zxww1tRMXZPLzipNXXl5PIzHml+9zB3Mrge2U8ldc0WF1ZdLp1iYQi7Kh3A==
+postgres@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/postgres/-/postgres-4.1.1.tgz#19f4b317d6fb7aac1ed4a9f7550957ddadee65da"
+  integrity sha512-1kJDojqNZC+iTHHXh6eif0J98LUtyLAePe/qkW1GK35eh2JixlsAiIKq3FGI+xqI+SUGTNodzf7TScVeIIyUug==
 
 prelude-ls@^1.2.1:
   version "1.2.1"
