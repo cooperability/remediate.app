@@ -783,10 +783,10 @@
   resolved "https://registry.yarnpkg.com/@sveltejs/acorn-typescript/-/acorn-typescript-1.0.13.tgz#8c7c3cc7014e212f2e8fccee0159dbecfe602405"
   integrity sha512-wgKggnhZVL9Bfx1OaKKTrYY9BFRk6C8UAkQNUcIv1+llzYrIqy+RZm5HPKzn0NpEBvTVhTqB4kQyllZywsRBRQ==
 
-"@sveltejs/adapter-vercel@^7.0.1":
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/@sveltejs/adapter-vercel/-/adapter-vercel-7.0.1.tgz#f6846640d2d0ad874ef3cd4ff0533547d2a9b7be"
-  integrity sha512-BnIGkQACaEeiXYcC5idodcUylp9Jyyx9aHIb7sqcGWfj8X3nJ57y8abmhFuAkg3oipLhaEfRqwwNtbuVhEaLhQ==
+"@sveltejs/adapter-vercel@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@sveltejs/adapter-vercel/-/adapter-vercel-7.0.2.tgz#b16f49dcbc11f09ca74f29601cc85fd25b9525ed"
+  integrity sha512-5pk92uA2y2bRf5OksP9sKeAYHKNEBClc9Ae+6KjUsIftqb0xW8UdlbIZSs4rMq8w5tv2KTjjI+iVN+hdH3vqBg==
   dependencies:
     "@vercel/nft" "^1.10.2"
 
