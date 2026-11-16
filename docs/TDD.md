@@ -1,11 +1,13 @@
 # Remediate — Technical Design Document
 
-**Status:** Draft v2 · **Date:** 2026-07-15
+**Status:** Draft v3 · **Date:** 2026-11-16 (v2: 2026-07-15)
 **Companion docs:** [PRD.md](./PRD.md) (what & why) · [ROADMAP.md](./ROADMAP.md) (what is built, and what to build next)
 
 > **Read with ROADMAP.md.** This design predates the build, and the build replaced three parts of it. Extraction shipped in TypeScript, so there is no Python (§3.1, §7.4). The harvest queue is request-driven, so there is no cron worker or `jobs` queue (§1, §6). Login is an allowlist plus a shared password (§2). Section 9.1 was written from the code. Corrections in place are marked _As built_.
 
 > **v2 changes:** renamed to Remediate · **Python retained** as a narrow cold-path extractor (§3.1 rewritten) · BMX harvest pipeline designed (§6) · TSV parser section added with ground truth (§5) · GUID identity + safety (§5.2) · Cards precedes Quest.
+
+> **v3 changes:** follows [PRD v3](./PRD.md). The stack table no longer says Python is kept (§2) · oversized cards as a source plus children (§4 design notes) · measures read from `review_log` ([§8.1](#81-measures-from-review_log-not-built)) · candidate Quest mechanics recorded ([§9.2](#92-candidate-mechanics-not-built)) · offline as an outbox ([§9.3](#93-offline-as-an-outbox-not-built)) · risks R9 to R11. Nothing added in v3 is built.
 
 ---
 
@@ -23,7 +25,11 @@
 6. [The BMX Harvest Pipeline](#6-the-bmx-harvest-pipeline)
 7. [Security Architecture](#7-security-architecture)
 8. [The Scheduler](#8-the-scheduler)
+   - 8.1 [Measures, from `review_log`](#81-measures-from-review_log-not-built)
 9. [The Quest Engine](#9-the-quest-engine)
+   - 9.1 [As built](#91-as-built-phase-6-groundwork)
+   - 9.2 [Candidate mechanics](#92-candidate-mechanics-not-built)
+   - 9.3 [Offline as an outbox](#93-offline-as-an-outbox-not-built)
 10. [AI Integration](#10-ai-integration)
 11. [Testing Strategy](#11-testing-strategy)
 12. [Migration & Rename](#12-migration--rename)
@@ -175,7 +181,7 @@ _As built:_ the real layout is flat routes (`/cards`, `/quest`, `/harvest`, `/lo
 | FastAPI **or** Express **or** Hono? | **None — SvelteKit `+server.ts` is the API** | See [§3.1](#31-python-the-honest-answer). Adding any of the three buys a second deployable, a second auth boundary, CORS, duplicated types, and a network hop inside your own app.                                                                                                                                                                                                          |
 | SvelteKit **or** TypeScript?        | **Both — the question is a category error**  | SvelteKit is a framework; TypeScript is the language. Svelte 5 runes + `strict` + end-to-end inference from Drizzle schema → API → component props. That inference chain is the thing worth showing off.                                                                                                                                                                                    |
 | Reintroduce Next.js / React?        | **No**                                       | The app at the repo root is already SvelteKit 2 + Svelte 5. The Next.js migration is done. Cards, Quest and BMX harvest are built on that scaffold. [ROADMAP.md](./ROADMAP.md) ranks what remains. Do not restore Next.js to satisfy a Dependabot alert.                                                                                                                                    |
-| Keep Python?                        | **Yes, narrowly**                            | One function. `api/extract.py`. See below.                                                                                                                                                                                                                                                                                                                                                  |
+| Keep Python?                        | **No** (_as built_)                          | v2 said yes, narrowly. Extraction shipped in TypeScript. [§3.1](#31-python-the-honest-answer) keeps the argument.                                                                                                                                                                                                                                                                           |
 
 ### Resulting stack
 
@@ -413,6 +419,7 @@ erDiagram
 - **`HARVEST` is separate from `NODE`** because most harvests aren't nodes yet: 3,861 URLs produce failures, dupes, and low-confidence proposals. Keeping the attempt log distinct from the graph means a failed fetch is a row you can retry, not a missing node you can't explain.
 - **`REVIEW_STATE` is `||--o|` (optional)** — harvested docs have no schedule until promoted (HRV-8). 3,861 auto-enrolled cards would destroy the review queue.
 - **`user_id` on every table, including `EDGE`.** Denormalized deliberately: RLS needs it locally on the row; a join to check tenancy is slower and a bug waiting to happen.
+- **Oversized cards become a source plus children (v3, not built).** PRD CRD-10 says a card tests one thing, and the corpus has answers of 48,000 characters. The split needs no new table. The long note stays a `NODE` with `kind='doc'` and no `REVIEW_STATE`. Each small card is a `NODE` with `kind='card'`. One `EDGE` per child joins them, with a new edge kind to be named when the work starts. This is the same shape ROADMAP BMX-A option (a) gives a bookmark, so one decision covers both. The original card keeps its GUID and its review history until the owner retires it, which makes a split reversible.
 
 ### Indexes that matter
 
@@ -872,6 +879,33 @@ export function previewIntervals(state: Card, now: Date): Record<Rating, Date> {
 
 Purity is the point: this is the highest-consequence logic in the app and the easiest to get subtly wrong. Property tests assert monotonicity (`Easy ≥ Good ≥ Hard ≥ Again`), stability non-decreasing on `Good`, and `due` always in the future.
 
+### 8.1 Measures, from `review_log` (not built)
+
+PRD §8.6 defines six measures. The §4 design note on `REVIEW_LOG.surface` said "instrument it from day one". The column has been written since the first migration and nothing reads it. This section is the reader.
+
+All of it runs under the owner's RLS context, like every other read. No new table and no analytics dependency.
+
+| Measure                  | Source                                                             | Notes                                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| MSR-1 days active        | `review_log.reviewed_at`                                           | Count distinct local days in the last 28. Use the day boundary `cards/stats.ts` already uses for the streak and heatmap, so all three agree    |
+| MSR-2 retained knowledge | `review_state`, through `retrievability()` in `cards/scheduler.ts` | Computed in TypeScript, not SQL, so the forgetting curve has one home. Count cards at ≥ 0.9 today                                              |
+| MSR-3 session shape      | `review_log.reviewed_at`                                           | A session is a run of grades with no gap over 10 minutes. A session "ends on its own" when its last grade emptied the due queue                |
+| MSR-4 play share         | `review_log.surface`                                               | Share of rows with `surface = 'quest'` over the same 28 days                                                                                   |
+| MSR-5 capture to card    | `harvests`, `nodes`                                                | Needs the time a harvest was accepted and the time its first card was created. Confirm both columns exist first. If not, MSR-5 waits for BMX-A |
+
+```sql
+-- MSR-1 and MSR-4 in one pass. :tz is the owner's time zone.
+SELECT count(DISTINCT (reviewed_at AT TIME ZONE :tz)::date) AS days_active,
+       avg((surface = 'quest')::int)                        AS play_share
+FROM review_log
+WHERE user_id = :user
+  AND reviewed_at >= now() - interval '28 days';
+```
+
+**Index.** `review_log` is indexed on `(user_id, node_id)` and on its two idempotency keys. None of those serves a time-range scan. At personal scale a sequential scan is fine. Add `(user_id, reviewed_at)` when the table passes about 100k rows, and measure before adding it.
+
+**Where it renders.** One section on the existing stats page (PRD MSR-6). Each number shows its window and its target, and the date it was last below target.
+
 ---
 
 ## 9. The Quest Engine
@@ -938,6 +972,31 @@ The sketch above became four modules in `src/lib/server/quest/`, three of them p
 **Locking.** `importDeck` and every Quest writer take one per-user advisory lock first, then the run row, then a card row. A grade re-checks the door under the lock, so an encounter a Cards review closed, or one opened before the day's allowance ran out, is refused rather than graded.
 
 **One write path (QST-3).** `cards/review.ts` `writeReview` is the only code that steps FSRS and writes `review_log` + `review_state`. A Cards round and a Quest encounter both call it; `POST /api/review/grade` routes on the body (`assessmentId` + `attempt`, or `encounterId`). `review_log.encounter_id` is unique, so a retried grade is reported, not logged twice.
+
+### 9.2 Candidate mechanics (not built)
+
+PRD §1.1 sets the rule: the game never offers a reward the scheduler would not also want. Each candidate below is a view over state that already exists. None adds a currency, and none is built or tested. All of them wait on the phone playtest (ROADMAP QST-A), because its notes say which problem is worth solving first.
+
+| Mechanic                | Built from                                         | What the player sees                                             | Guardrail                                                                |
+| ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Territory that fades    | `review_state.due` per card, rolled up per concept | A held region dims as its cards fall due and brightens on review | Progress is never deleted. Dimming is a prompt                           |
+| Streak with forgiveness | The streak in `cards/stats.ts`                     | One missed day a week does not break it                          | A streak that breaks on the first miss becomes a reason to quit          |
+| Codex                   | Concept nodes and `retrievability()`               | A list of concepts held, counted only while retained             | Seen once is not held                                                    |
+| Weekly expedition       | `suggest()` in `quest/engine.ts`, seeded per week  | A route through due and new material with one small goal         | The route comes from the scheduler's queue, so it cannot reward cramming |
+| Prerequisite gradient   | `prereq_of` edges, already honored by the engine   | Easy rooms near the entrance, hard ones deep in                  | ROADMAP AI-C: design before building                                     |
+
+### 9.3 Offline as an outbox (not built)
+
+"PWA" suggests offline use. Today every grade is a request and `src` has no service worker, so there is none. The separate Anki PWA design answered this with a local database and sync. Remediate keeps the server authoritative and adds the smallest thing that works.
+
+1. **Cache the day.** A service worker, which this work adds, stores the due queue for today on load: card content and current FSRS state.
+2. **Grade into an outbox.** Offline, a grade is written to IndexedDB with the same idempotency key the online path sends (`assessmentId` plus `attempt` for Cards).
+3. **Replay on reconnect.** The outbox posts each grade to `POST /api/review/grade` in order. A repeated key is reported, not logged twice (§9.1), so a replay after a half-finished sync is safe.
+4. **The server decides.** Interval previews (PRD CRD-2) are computed on the client with `ts-fsrs` for display only. The server recomputes from its own state. A grade the server refuses is shown to the owner, not dropped.
+
+**Limits.** Cards only at first. Quest movement needs the door re-check under the advisory lock, so it stays online. No second store, no merge logic, no conflict UI beyond the refused-grade list.
+
+**When.** Only if a month of MSR-1 readings shows days lost to having no connection. Otherwise this stays a design.
 
 ---
 
@@ -1174,3 +1233,6 @@ Dependabot alerts on `backend/poetry.lock` (nltk, starlette, python-multipart, a
 | R6  | **DNS rebinding** defeats the SSRF check (TOCTOU between resolve and connect).                                                                                                   | Low         | High     | _As built:_ fixed by checking inside the socket’s DNS lookup ([§7.4](#74-ssrf-guard-sec-2--the-highest-severity-new-surface)). The fetch runs in the main function, which holds database credentials, so the guard is the only wall.           |
 | R7  | **FSRS param tuning** needs review history nobody has.                                                                                                                           | High        | Low      | Ship `ts-fsrs` defaults (fit on ~1.7B reviews — better than anything fit on 457 cards). Revisit at 1k+ reviews.                                                                                                                                |
 | R8  | Vercel timeout on large imports/harvests.                                                                                                                                        | Low         | Low      | _As built:_ no job queue. Import is synchronous under a 4 MB cap. Harvest rounds run in the request with an 8 s budget (ROADMAP DATA-C).                                                                                                       |
+| R9  | **Nobody measures adherence.** The product hypothesis has had its column since the first migration and no reader.                                                                | **Certain** | **High** | [§8.1](#81-measures-from-review_log-not-built). Ship the stats section before any AI epic.                                                                                                                                                     |
+| R10 | **Cards are too long to be rooms.** p95 answers run 6k to 11k characters, so a five-second grade is not honest and an encounter is a wall of text.                               | High        | **High** | PRD CRD-10 and AI-8. Split the most-reviewed deck by hand first to learn what a good split looks like.                                                                                                                                         |
+| R11 | **Quest is not fun, and nobody has checked.** No phone playtest is recorded.                                                                                                     | Unknown     | **High** | Run ROADMAP QST-A before AI-A. Its notes decide whether enrichment is polish or the fix.                                                                                                                                                       |
