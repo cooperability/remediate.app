@@ -1,6 +1,6 @@
 name: Verify
 
-# Deploys are owned by the Vercel Git integration, not by this workflow.
+# Deploys nothing. deploy.yml runs after this passes on main.
 on:
   push:
     branches: [main]
